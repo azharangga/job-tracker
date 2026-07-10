@@ -37,7 +37,7 @@ export function NotesPage() {
   const createMut = useMutation({
     mutationFn: () =>
       createNote({ title: form.title, body_markdown: form.body_markdown } as Partial<NoteRow>),
-    onSuccess: (n) => {
+    onSuccess: (n: NoteRow) => {
       toast.success(t("notes.created"));
       setForm({ title: "", body_markdown: "" });
       setOpenCreate(false);

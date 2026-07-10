@@ -77,7 +77,8 @@
     "offers": "Offers",
     "responseRate": "Response Rate",
     "dreamCompanies": "Dream Companies",
-    "workspaceTagline": "Track every application from wishlist to offer in one professional workspace."
+    "workspaceTagline": "Track every application from wishlist to offer in one professional workspace.",
+    "continueAsDemo": "Continue as Demo"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -321,7 +322,8 @@
     "newPassword": "New Password",
     "deleteAvatarTitle": "Delete Profile Picture",
     "deleteAvatarDesc": "Are you sure you want to delete your profile picture? This action cannot be undone.",
-    "avatarDeleted": "Profile picture removed successfully."
+    "avatarDeleted": "Profile picture removed successfully.",
+    "passwordChangeDisabledInDemo": "Password cannot be changed in Demo Mode."
   },
   "empty": {
     "title": "Nothing here yet",
@@ -329,5 +331,12 @@
   },
   "errors": {
     "generic": "Something went wrong. Please try again."
+  },
+  "demo": {
+    "welcome": "Welcome to Demo Mode! Changes are saved locally.",
+    "resetSuccess": "Demo data reset to initial values!",
+    "profileUpdated": "Profile updated locally!",
+    "bannerText": "You are viewing offline demo data. Changes are saved locally and won't affect production.",
+    "resetButton": "Reset Data"
   }
 }

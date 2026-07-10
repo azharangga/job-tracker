@@ -1,0 +1,98 @@
+{
+  "companies": [
+    {"id": "10000000-0000-0000-0000-000000000001", "name": "Google", "slug": "google", "website": "https://google.com", "industry": "Tech", "size": "10000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-000000000002", "name": "Microsoft", "slug": "microsoft", "website": "https://microsoft.com", "industry": "Tech", "size": "10000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-000000000003", "name": "Meta", "slug": "meta", "website": "https://meta.com", "industry": "Tech", "size": "10000+", "location": "Singapore"},
+    {"id": "10000000-0000-0000-0000-000000000004", "name": "Amazon", "slug": "amazon", "website": "https://amazon.com", "industry": "Tech", "size": "10000+", "location": "Singapore"},
+    {"id": "10000000-0000-0000-0000-000000000005", "name": "Apple", "slug": "apple", "website": "https://apple.com", "industry": "Tech", "size": "10000+", "location": "Singapore"},
+    {"id": "10000000-0000-0000-0000-000000000006", "name": "Tokopedia", "slug": "tokopedia", "website": "https://tokopedia.com", "industry": "E-commerce", "size": "5000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-000000000007", "name": "Gojek", "slug": "gojek", "website": "https://gojek.com", "industry": "On-demand", "size": "5000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-000000000008", "name": "Traveloka", "slug": "traveloka", "website": "https://traveloka.com", "industry": "Travel", "size": "2000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-000000000009", "name": "Shopee", "slug": "shopee", "website": "https://shopee.co.id", "industry": "E-commerce", "size": "10000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-00000000000a", "name": "TikTok", "slug": "tiktok", "website": "https://tiktok.com", "industry": "Social", "size": "5000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-00000000000b", "name": "Xendit", "slug": "xendit", "website": "https://xendit.co", "industry": "Fintech", "size": "1000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-00000000000c", "name": "Ruangguru", "slug": "ruangguru", "website": "https://ruangguru.com", "industry": "Edtech", "size": "2000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-00000000000d", "name": "Blibli", "slug": "blibli", "website": "https://blibli.com", "industry": "E-commerce", "size": "2000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-00000000000e", "name": "GoTo", "slug": "goto", "website": "https://gotocompany.com", "industry": "Tech", "size": "20000+", "location": "Jakarta"},
+    {"id": "10000000-0000-0000-0000-00000000000f", "name": "Bukalapak", "slug": "bukalapak", "website": "https://bukalapak.com", "industry": "E-commerce", "size": "2000+", "location": "Jakarta"}
+  ],
+  "contacts": [
+    {"id": "20000000-0000-0000-0000-000000000001", "company_id": "10000000-0000-0000-0000-000000000001", "name": "Sarah Johnson", "role": "Technical Recruiter", "email": "sarah@google.com"},
+    {"id": "20000000-0000-0000-0000-000000000002", "company_id": "10000000-0000-0000-0000-000000000002", "name": "David Kim", "role": "HR Manager", "email": "david@microsoft.com"},
+    {"id": "20000000-0000-0000-0000-000000000003", "company_id": "10000000-0000-0000-0000-000000000006", "name": "Rina Andini", "role": "Talent Acquisition", "email": "rina@tokopedia.com"},
+    {"id": "20000000-0000-0000-0000-000000000004", "company_id": "10000000-0000-0000-0000-000000000007", "name": "Budi Santoso", "role": "Engineering Manager", "email": "budi@gojek.com"},
+    {"id": "20000000-0000-0000-0000-000000000005", "company_id": "10000000-0000-0000-0000-000000000009", "name": "Michelle Wang", "role": "Recruiter", "email": "michelle@shopee.com"},
+    {"id": "20000000-0000-0000-0000-000000000006", "company_id": "10000000-0000-0000-0000-00000000000b", "name": "Alex Tan", "role": "Head of Talent", "email": "alex.tan@xendit.co"}
+  ],
+  "documents": [
+    {"id": "30000000-0000-0000-0000-000000000001", "name": "CV_Umum_v3.pdf", "kind": "cv", "description": "Latest general CV", "size": 102400, "version": 1, "created_at": "2026-07-09T12:00:00Z"},
+    {"id": "30000000-0000-0000-0000-000000000002", "name": "CoverLetter_Backend.pdf", "kind": "cover_letter", "description": "Backend engineer cover letter", "size": 51200, "version": 1, "created_at": "2026-07-09T13:00:00Z"},
+    {"id": "30000000-0000-0000-0000-000000000003", "name": "Portfolio_2026.pdf", "kind": "portfolio", "description": "Portfolio deck", "size": 2048000, "version": 1, "created_at": "2026-07-09T14:00:00Z"},
+    {"id": "30000000-0000-0000-0000-000000000004", "name": "Transcript_Official.pdf", "kind": "transcript", "description": "Academic transcript", "size": 409600, "version": 1, "created_at": "2026-07-09T15:00:00Z"}
+  ],
+  "applications": [
+    {"id": "40000000-0000-0000-0000-000000000001", "company_id": "10000000-0000-0000-0000-000000000001", "position": "Senior Backend Engineer", "status": "user_interview", "work_mode": "hybrid", "employment_type": "full_time", "platform": "LinkedIn", "applied_at": "2026-06-20", "priority": "high", "tags": ["backend", "golang"], "created_at": "2026-06-20T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-000000000002", "company_id": "10000000-0000-0000-0000-000000000002", "position": "Software Engineer II", "status": "technical_test", "work_mode": "remote", "employment_type": "full_time", "platform": "Referral", "applied_at": "2026-06-25", "priority": "high", "tags": ["dotnet", "azure"], "created_at": "2026-06-25T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-000000000003", "company_id": "10000000-0000-0000-0000-000000000006", "position": "Fullstack Engineer", "status": "offer", "work_mode": "hybrid", "employment_type": "full_time", "platform": "LinkedIn", "applied_at": "2026-06-05", "priority": "urgent", "tags": ["react", "node"], "created_at": "2026-06-05T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-000000000004", "company_id": "10000000-0000-0000-0000-000000000007", "position": "Backend Engineer", "status": "hr_screening", "work_mode": "remote", "employment_type": "full_time", "platform": "Website", "applied_at": "2026-07-05", "priority": "medium", "tags": ["java", "kotlin"], "created_at": "2026-07-05T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-000000000005", "company_id": "10000000-0000-0000-0000-000000000009", "position": "Software Development Engineer", "status": "rejected", "work_mode": "onsite", "employment_type": "full_time", "platform": "LinkedIn", "applied_at": "2026-05-10", "priority": "medium", "tags": ["python", "django"], "created_at": "2026-05-10T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-000000000006", "company_id": "10000000-0000-0000-0000-000000000008", "position": "Data Engineer", "status": "applied", "work_mode": "hybrid", "employment_type": "full_time", "platform": "Glints", "applied_at": "2026-07-07", "priority": "medium", "tags": ["spark", "python"], "created_at": "2026-07-07T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-000000000007", "company_id": "10000000-0000-0000-0000-00000000000a", "position": "Backend Engineer", "status": "final_interview", "work_mode": "remote", "employment_type": "full_time", "platform": "LinkedIn", "applied_at": "2026-06-15", "priority": "high", "tags": ["go", "grpc"], "created_at": "2026-06-15T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-000000000008", "company_id": "10000000-0000-0000-0000-00000000000b", "position": "Payment Integration Specialist", "status": "wishlist", "work_mode": "remote", "employment_type": "contract", "platform": "Website", "applied_at": null, "priority": "low", "tags": ["fintech", "api"], "created_at": "2026-07-08T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-000000000009", "company_id": "10000000-0000-0000-0000-00000000000c", "position": "Senior Fullstack Developer", "status": "applied", "work_mode": "remote", "employment_type": "full_time", "platform": "Website", "applied_at": "2026-07-08", "priority": "medium", "tags": ["nextjs", "typescript"], "created_at": "2026-07-08T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-00000000000a", "company_id": "10000000-0000-0000-0000-00000000000e", "position": "Infrastructure Staff Engineer", "status": "withdrawn", "work_mode": "hybrid", "employment_type": "full_time", "platform": "Referral", "applied_at": "2026-05-25", "priority": "low", "tags": ["kubernetes", "terraform"], "created_at": "2026-05-25T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-00000000000b", "company_id": "10000000-0000-0000-0000-000000000003", "position": "Software Engineer (Product)", "status": "technical_test", "work_mode": "remote", "employment_type": "full_time", "platform": "Careers Page", "applied_at": "2026-06-30", "priority": "high", "tags": ["react", "graphql"], "created_at": "2026-06-30T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-00000000000c", "company_id": "10000000-0000-0000-0000-000000000004", "position": "SDE II (Cloud Commerce)", "status": "applied", "work_mode": "hybrid", "employment_type": "full_time", "platform": "LinkedIn", "applied_at": "2026-07-03", "priority": "high", "tags": ["aws", "java"], "created_at": "2026-07-03T08:00:00Z"},
+    {"id": "40000000-0000-0000-0000-00000000000d", "company_id": "10000000-0000-0000-0000-00000000000d", "position": "Frontend Lead", "status": "hr_interview", "work_mode": "hybrid", "employment_type": "full_time", "platform": "Referral", "applied_at": "2026-06-12", "priority": "high", "tags": ["react", "tailwind"], "created_at": "2026-06-12T08:00:00Z"}
+  ],
+  "application_timeline": [
+    {"id": "50000000-0000-0000-0000-000000000001", "application_id": "40000000-0000-0000-0000-000000000001", "stage": "applied", "occurred_at": "2026-06-20T08:00:00Z", "notes": "Applied via LinkedIn"},
+    {"id": "50000000-0000-0000-0000-000000000002", "application_id": "40000000-0000-0000-0000-000000000001", "stage": "hr_screening", "occurred_at": "2026-06-23T10:00:00Z", "notes": "30 min call with Sarah Johnson"},
+    {"id": "50000000-0000-0000-0000-000000000003", "application_id": "40000000-0000-0000-0000-000000000001", "stage": "technical_test", "occurred_at": "2026-06-28T14:00:00Z", "notes": "Leetcode medium coding test"},
+    {"id": "50000000-0000-0000-0000-000000000004", "application_id": "40000000-0000-0000-0000-000000000001", "stage": "user_interview", "occurred_at": "2026-07-05T09:00:00Z", "notes": "System design round with engineering lead"},
+    {"id": "50000000-0000-0000-0000-000000000005", "application_id": "40000000-0000-0000-0000-000000000003", "stage": "applied", "occurred_at": "2026-06-05T08:00:00Z", "notes": "Applied via referral link"},
+    {"id": "50000000-0000-0000-0000-000000000006", "application_id": "40000000-0000-0000-0000-000000000003", "stage": "hr_screening", "occurred_at": "2026-06-10T11:00:00Z", "notes": "Short HR introduction"},
+    {"id": "50000000-0000-0000-0000-000000000007", "application_id": "40000000-0000-0000-0000-000000000003", "stage": "technical_test", "occurred_at": "2026-06-15T09:00:00Z", "notes": "React/Node take-home assignment"},
+    {"id": "50000000-0000-0000-0000-000000000008", "application_id": "40000000-0000-0000-0000-000000000003", "stage": "user_interview", "occurred_at": "2026-06-25T14:00:00Z", "notes": "Walkthrough assignment and live coding"},
+    {"id": "50000000-0000-0000-0000-000000000009", "application_id": "40000000-0000-0000-0000-000000000003", "stage": "final_interview", "occurred_at": "2026-07-02T10:00:00Z", "notes": "Cultural fit and compensation discussion"},
+    {"id": "50000000-0000-0000-0000-00000000000a", "application_id": "40000000-0000-0000-0000-000000000003", "stage": "offer", "occurred_at": "2026-07-07T11:00:00Z", "notes": "Received official offer letter!"},
+    {"id": "50000000-0000-0000-0000-00000000000b", "application_id": "40000000-0000-0000-0000-000000000007", "stage": "applied", "occurred_at": "2026-06-15T08:00:00Z", "notes": "Applied via LinkedIn Careers"},
+    {"id": "50000000-0000-0000-0000-00000000000c", "application_id": "40000000-0000-0000-0000-000000000007", "stage": "hr_screening", "occurred_at": "2026-06-20T10:00:00Z", "notes": "HR call"},
+    {"id": "50000000-0000-0000-0000-00000000000d", "application_id": "40000000-0000-0000-0000-000000000007", "stage": "technical_test", "occurred_at": "2026-06-28T09:00:00Z", "notes": "Online Assessment (OA) link"},
+    {"id": "50000000-0000-0000-0000-00000000000e", "application_id": "40000000-0000-0000-0000-000000000007", "stage": "user_interview", "occurred_at": "2026-07-04T15:00:00Z", "notes": "Live coding interview"},
+    {"id": "50000000-0000-0000-0000-00000000000f", "application_id": "40000000-0000-0000-0000-000000000007", "stage": "final_interview", "occurred_at": "2026-07-09T13:00:00Z", "notes": "Manager final round"}
+  ],
+  "application_activities": [
+    {"id": "60000000-0000-0000-0000-000000000001", "application_id": "40000000-0000-0000-0000-000000000001", "type": "status_changed", "payload": {"to": "user_interview"}, "created_at": "2026-07-05T09:00:00Z"},
+    {"id": "60000000-0000-0000-0000-000000000002", "application_id": "40000000-0000-0000-0000-000000000003", "type": "status_changed", "payload": {"to": "offer"}, "created_at": "2026-07-07T11:00:00Z"},
+    {"id": "60000000-0000-0000-0000-000000000003", "application_id": "40000000-0000-0000-0000-000000000004", "type": "note_added", "payload": {"summary": "HR screening scheduled"}, "created_at": "2026-07-06T10:00:00Z"},
+    {"id": "60000000-0000-0000-0000-000000000004", "application_id": "40000000-0000-0000-0000-000000000007", "type": "status_changed", "payload": {"to": "final_interview"}, "created_at": "2026-07-09T13:00:00Z"}
+  ],
+  "application_checklist": [
+    {"id": "70000000-0000-0000-0000-000000000001", "application_id": "40000000-0000-0000-0000-000000000001", "label": "Prepare system design", "done": true, "sort_order": 1},
+    {"id": "70000000-0000-0000-0000-000000000002", "application_id": "40000000-0000-0000-0000-000000000001", "label": "Review distributed systems", "done": false, "sort_order": 2},
+    {"id": "70000000-0000-0000-0000-000000000003", "application_id": "40000000-0000-0000-0000-000000000003", "label": "Sign offer letter", "done": false, "sort_order": 1},
+    {"id": "70000000-0000-0000-0000-000000000004", "application_id": "40000000-0000-0000-0000-000000000003", "label": "Negotiate salary", "done": true, "sort_order": 2},
+    {"id": "70000000-0000-0000-0000-000000000007", "application_id": "40000000-0000-0000-0000-000000000007", "label": "Practice GRPC questions", "done": true, "sort_order": 1},
+    {"id": "70000000-0000-0000-0000-000000000007", "application_id": "40000000-0000-0000-0000-000000000007", "label": "Brush up on concurrency", "done": false, "sort_order": 2}
+  ],
+  "tasks": [
+    {"id": "80000000-0000-0000-0000-000000000001", "application_id": "40000000-0000-0000-0000-000000000001", "title": "Follow up recruiter Google", "due_at": "2026-07-12T09:00:00Z", "priority": "high", "status": "todo"},
+    {"id": "80000000-0000-0000-0000-000000000002", "application_id": "40000000-0000-0000-0000-000000000002", "title": "Selesaikan take-home test", "due_at": "2026-07-13T18:00:00Z", "priority": "urgent", "status": "todo"},
+    {"id": "80000000-0000-0000-0000-000000000003", "application_id": "40000000-0000-0000-0000-000000000003", "title": "Review offer Tokopedia", "due_at": "2026-07-11T12:00:00Z", "priority": "urgent", "status": "todo"},
+    {"id": "80000000-0000-0000-0000-000000000004", "application_id": null, "title": "Update CV terbaru", "due_at": "2026-07-15T23:59:59Z", "priority": "medium", "status": "todo"},
+    {"id": "80000000-0000-0000-0000-000000000005", "application_id": null, "title": "Latihan LeetCode 1 jam", "due_at": "2026-07-11T09:00:00Z", "priority": "low", "status": "todo"}
+  ],
+  "notes": [
+    {"id": "90000000-0000-0000-0000-000000000001", "application_id": "40000000-0000-0000-0000-000000000001", "company_id": "10000000-0000-0000-0000-000000000001", "title": "Persiapan interview Google", "body_markdown": "## System Design\n- Rate limiter\n- URL shortener\n- Consistent hashing", "tags": ["prep"], "created_at": "2026-07-05T09:00:00Z", "updated_at": "2026-07-05T09:00:00Z"},
+    {"id": "90000000-0000-0000-0000-000000000002", "application_id": null, "company_id": "10000000-0000-0000-0000-000000000003", "title": "Research Meta", "body_markdown": "Focus on infra team and edge deployments. They make heavy use of Rust and C++.", "tags": ["research"], "created_at": "2026-07-06T14:00:00Z", "updated_at": "2026-07-06T14:00:00Z"},
+    {"id": "90000000-0000-0000-0000-000000000003", "application_id": "40000000-0000-0000-0000-000000000003", "company_id": null, "title": "Offer Tokopedia detail", "body_markdown": "Base: 45jt, THR 1x, bonus performance 2-4x. Hybrid work 2 days at Office.", "tags": ["offer"], "created_at": "2026-07-07T11:00:00Z", "updated_at": "2026-07-07T11:00:00Z"}
+  ],
+  "calendar_events": [
+    {"id": "a0000000-0000-0000-0000-000000000001", "application_id": "40000000-0000-0000-0000-000000000001", "title": "Interview Google — System Design", "kind": "interview", "starts_at": "2026-07-12T10:00:00Z", "ends_at": "2026-07-12T11:00:00Z", "location": "Google Meet"},
+    {"id": "a0000000-0000-0000-0000-000000000002", "application_id": "40000000-0000-0000-0000-000000000002", "title": "Take-home deadline Microsoft", "kind": "deadline", "starts_at": "2026-07-13T18:00:00Z", "ends_at": "2026-07-13T18:05:00Z", "location": "GitHub Classroom Portal"},
+    {"id": "a0000000-0000-0000-0000-000000000003", "application_id": "40000000-0000-0000-0000-000000000004", "title": "HR Call Gojek", "kind": "interview", "starts_at": "2026-07-11T14:00:00Z", "ends_at": "2026-07-11T14:30:00Z", "location": "Zoom Meeting"},
+    {"id": "a0000000-0000-0000-0000-000000000004", "application_id": "40000000-0000-0000-0000-000000000007", "title": "Final interview TikTok", "kind": "interview", "starts_at": "2026-07-14T09:00:00Z", "ends_at": "2026-07-14T11:00:00Z", "location": "Zoom Meeting"},
+    {"id": "a0000000-0000-0000-0000-000000000005", "application_id": "40000000-0000-0000-0000-000000000003", "title": "Offer call Tokopedia", "kind": "offer_call", "starts_at": "2026-07-11T11:00:00Z", "ends_at": "2026-07-11T11:30:00Z", "location": "Phone Call"}
+  ]
+}

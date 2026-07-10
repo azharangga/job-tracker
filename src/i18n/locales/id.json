@@ -77,7 +77,8 @@
     "offers": "Penawaran",
     "responseRate": "Persentase Respon",
     "dreamCompanies": "Perusahaan Impian",
-    "workspaceTagline": "Pantau setiap lamaran dari wishlist hingga penawaran di satu ruang kerja profesional."
+    "workspaceTagline": "Pantau setiap lamaran dari wishlist hingga penawaran di satu ruang kerja profesional.",
+    "continueAsDemo": "Coba Demo"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -321,7 +322,8 @@
     "newPassword": "Kata Sandi Baru",
     "deleteAvatarTitle": "Hapus Foto Profil",
     "deleteAvatarDesc": "Apakah Anda yakin ingin menghapus foto profil Anda? Tindakan ini tidak dapat dibatalkan.",
-    "avatarDeleted": "Foto profil berhasil dihapus."
+    "avatarDeleted": "Foto profil berhasil dihapus.",
+    "passwordChangeDisabledInDemo": "Kata sandi tidak dapat diubah dalam Mode Demo."
   },
   "empty": {
     "title": "Belum ada data",
@@ -329,5 +331,12 @@
   },
   "errors": {
     "generic": "Terjadi kesalahan. Silakan coba lagi."
+  },
+  "demo": {
+    "welcome": "Selamat datang di Mode Demo! Semua perubahan disimpan secara lokal.",
+    "resetSuccess": "Data demo berhasil dikembalikan ke kondisi awal!",
+    "profileUpdated": "Profil berhasil diperbarui secara lokal!",
+    "bannerText": "Anda sedang melihat data demo offline. Perubahan disimpan secara lokal dan tidak memengaruhi database produksi.",
+    "resetButton": "Reset Data"
   }
 }

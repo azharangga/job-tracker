@@ -93,8 +93,12 @@ job-tracker/
 │   ├── providers/
 │   │   ├── ProtectedLayout.tsx             # Guard autentikasi — redirect ke /login jika belum login
 │   │   └── RootProviders.tsx               # Provider root (React Query, Theme, Auth)
-│   ├── services/                           # Fungsi layanan API — operasi CRUD ke Supabase
+│   ├── services/                           # Lapisan akses data (Repository / Service)
+│   │   ├── demo.ts                         # Akses data offline untuk Mode Demo (Local Storage)
+│   │   ├── index.ts                        # Selector / proxy data source (Demo vs Live)
+│   │   └── live.ts                         # Akses data online untuk Mode Live (Supabase)
 │   ├── types/                              # Definisi tipe data TypeScript global
+│   ├── demoData.json                       # Dataset dummy statis awal untuk Mode Demo
 │   └── styles.css                          # CSS global & konfigurasi Tailwind CSS 4
 ├── supabase/
 │   └── functions/
@@ -145,6 +149,17 @@ job-tracker/
    ```bash
    npm install
    ```
+
+- - -
+
+## Mode Demo (Offline)
+
+Aplikasi menyediakan **Mode Demo** untuk mencoba seluruh fitur interaktif aplikasi tanpa memerlukan database Supabase (offline/lokal).
+
+- **Cara Mengakses**: Pada halaman login, klik tombol **"Coba Demo"** (atau **"Continue as Demo"**).
+- **Penyimpanan Data**: Seluruh operasi tambah, edit, dan hapus data berjalan menggunakan Local Storage di browser Anda. Perubahan ini **tidak** akan memengaruhi data database produksi.
+- **Data Awal**: Pada login pertama, aplikasi akan memuat data dummy simulasi yang kaya (beberapa pipelines lamaran, jadwal wawancara, catatan, kontak perekrut, dan tugas).
+- **Reset Data**: Anda dapat mengembalikan data demo ke kondisi semula kapan saja dengan menekan tombol **"Reset Data"** pada banner kuning di bagian atas aplikasi.
 
 - - -
 

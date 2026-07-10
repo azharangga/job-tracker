@@ -9,7 +9,7 @@ import { Logo } from "@/components/common/Logo";
 
 export function LoginPage() {
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, loginAsDemo } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
@@ -166,6 +166,16 @@ export function LoginPage() {
               {loading ? t("login.signingIn") : t("login.submit")}
             </button>
           </form>
+
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={loginAsDemo}
+              className="w-full h-10 rounded-md border border-hairline bg-surface text-ink-secondary hover:bg-surface-muted transition-colors text-sm font-medium flex items-center justify-center gap-2"
+            >
+              {t("login.continueAsDemo")}
+            </button>
+          </div>
         </motion.div>
       </div>
     </div>
