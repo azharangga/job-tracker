@@ -3,6 +3,7 @@
 # <img src="public/favicon.svg" width="36" height="36" style="vertical-align: middle; margin-right: 4px;" /> Job Tracker
 
 ![React](https://img.shields.io/badge/React-19-20d5fd?style=flat-square&logo=react&logoColor=white)
+![TanStack Start](https://img.shields.io/badge/TanStack_Start-Framework-FF4154?style=flat-square&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06b6d4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)
