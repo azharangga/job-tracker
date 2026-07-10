@@ -1,0 +1,261 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* =========================================================
+ * Job Tracker — Design System (Notion-inspired paper design)
+ * All colors in oklch. Sticker accents preserved from DESIGN.md.
+ * ========================================================= */
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --radius-xs: 4px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-active: var(--primary-active);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-hairline: var(--hairline);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-sticker-sky: var(--sticker-sky);
+  --color-sticker-purple: var(--sticker-purple);
+  --color-sticker-pink: var(--sticker-pink);
+  --color-sticker-orange: var(--sticker-orange);
+  --color-sticker-teal: var(--sticker-teal);
+  --color-sticker-green: var(--sticker-green);
+  --color-sticker-brown: var(--sticker-brown);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --shadow-elevated: 0 1px 2px oklch(0 0 0 / 0.04), 0 8px 24px oklch(0 0 0 / 0.06);
+  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.04);
+}
+
+:root {
+  --radius: 8px;
+
+  /* Notion paper canvas */
+  --background: oklch(0.988 0.006 85);      /* #fcfbf8 ish */
+  --foreground: oklch(0.16 0.005 60);       /* near-black */
+  --surface: oklch(1 0 0);                  /* pure white for cards */
+  --surface-muted: oklch(0.968 0.006 85);   /* #f6f5f4 */
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.005 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.16 0.005 60);
+
+  --primary: oklch(0.58 0.16 246);          /* #0075de */
+  --primary-foreground: oklch(1 0 0);
+  --primary-active: oklch(0.47 0.15 248);   /* #005bab */
+  --primary-soft: oklch(0.95 0.03 246);
+
+  --secondary: oklch(0.968 0.006 85);
+  --secondary-foreground: oklch(0.22 0.02 265);
+
+  --muted: oklch(0.968 0.006 85);
+  --muted-foreground: oklch(0.48 0.008 60); /* #615d59 */
+
+  --accent: oklch(0.958 0.008 85);
+  --accent-foreground: oklch(0.22 0.02 265);
+
+  --destructive: oklch(0.6 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
+  --success: oklch(0.63 0.15 148);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.75 0.14 75);
+  --warning-foreground: oklch(0.22 0.05 60);
+
+  --border: oklch(0.92 0.005 85);           /* #e6e6e6 warmer */
+  --hairline: oklch(0.94 0.005 85);
+  --input: oklch(0.92 0.005 85);
+  --ring: oklch(0.58 0.16 246 / 0.5);
+
+  --ink: oklch(0.14 0.003 60);
+  --ink-secondary: oklch(0.24 0.006 60);
+  --ink-muted: oklch(0.48 0.008 60);
+  --ink-faint: oklch(0.7 0.005 60);
+
+  --sticker-sky: oklch(0.75 0.11 240);
+  --sticker-purple: oklch(0.82 0.09 305);
+  --sticker-pink: oklch(0.75 0.19 5);
+  --sticker-orange: oklch(0.66 0.18 45);
+  --sticker-teal: oklch(0.62 0.09 190);
+  --sticker-green: oklch(0.7 0.16 145);
+  --sticker-brown: oklch(0.42 0.06 55);
+
+  --chart-1: var(--primary);
+  --chart-2: var(--sticker-teal);
+  --chart-3: var(--sticker-orange);
+  --chart-4: var(--sticker-purple);
+  --chart-5: var(--sticker-green);
+
+  --sidebar: oklch(0.978 0.006 85);
+  --sidebar-foreground: oklch(0.24 0.006 60);
+  --sidebar-primary: oklch(0.16 0.005 60);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.94 0.006 85);
+  --sidebar-accent-foreground: oklch(0.16 0.005 60);
+  --sidebar-border: oklch(0.92 0.005 85);
+  --sidebar-ring: oklch(0.58 0.16 246 / 0.5);
+}
+
+.dark {
+  --background: oklch(0.15 0.006 60);
+  --foreground: oklch(0.97 0.004 60);
+  --surface: oklch(0.19 0.006 60);
+  --surface-muted: oklch(0.22 0.006 60);
+
+  --card: oklch(0.19 0.006 60);
+  --card-foreground: oklch(0.97 0.004 60);
+  --popover: oklch(0.22 0.006 60);
+  --popover-foreground: oklch(0.97 0.004 60);
+
+  --primary: oklch(0.7 0.15 246);
+  --primary-foreground: oklch(0.14 0.006 60);
+  --primary-active: oklch(0.62 0.15 246);
+  --primary-soft: oklch(0.28 0.05 246);
+
+  --secondary: oklch(0.24 0.006 60);
+  --secondary-foreground: oklch(0.97 0.004 60);
+
+  --muted: oklch(0.24 0.006 60);
+  --muted-foreground: oklch(0.7 0.006 60);
+
+  --accent: oklch(0.26 0.006 60);
+  --accent-foreground: oklch(0.97 0.004 60);
+
+  --destructive: oklch(0.7 0.19 22);
+  --destructive-foreground: oklch(0.14 0.006 60);
+  --success: oklch(0.7 0.15 148);
+  --success-foreground: oklch(0.14 0.006 60);
+  --warning: oklch(0.8 0.14 75);
+  --warning-foreground: oklch(0.14 0.006 60);
+
+  --border: oklch(1 0 0 / 0.09);
+  --hairline: oklch(1 0 0 / 0.06);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.7 0.15 246 / 0.6);
+
+  --ink: oklch(0.97 0.004 60);
+  --ink-secondary: oklch(0.85 0.005 60);
+  --ink-muted: oklch(0.68 0.006 60);
+  --ink-faint: oklch(0.5 0.006 60);
+
+  --sidebar: oklch(0.17 0.006 60);
+  --sidebar-foreground: oklch(0.85 0.005 60);
+  --sidebar-primary: oklch(0.97 0.004 60);
+  --sidebar-primary-foreground: oklch(0.14 0.006 60);
+  --sidebar-accent: oklch(0.24 0.006 60);
+  --sidebar-accent-foreground: oklch(0.97 0.004 60);
+  --sidebar-border: oklch(1 0 0 / 0.08);
+  --sidebar-ring: oklch(0.7 0.15 246 / 0.6);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  h1, h2, h3, h4 { letter-spacing: -0.02em; }
+  ::selection { background: var(--color-primary-soft); color: var(--color-ink); }
+}
+
+/* Typography utilities from DESIGN.md */
+@utility text-display-1 {
+  font-size: 64px; font-weight: 700; line-height: 1.0; letter-spacing: -2.125px;
+}
+@utility text-display-2 {
+  font-size: 54px; font-weight: 700; line-height: 1.04; letter-spacing: -1.875px;
+}
+@utility text-h1 {
+  font-size: 40px; font-weight: 700; line-height: 1.1; letter-spacing: -1px;
+}
+@utility text-h2 {
+  font-size: 26px; font-weight: 700; line-height: 1.23; letter-spacing: -0.625px;
+}
+@utility text-h3 {
+  font-size: 22px; font-weight: 700; line-height: 1.27; letter-spacing: -0.25px;
+}
+@utility text-title {
+  font-size: 20px; font-weight: 600; line-height: 1.4; letter-spacing: -0.125px;
+}
+@utility text-eyebrow {
+  font-size: 12px; font-weight: 600; line-height: 1.33; letter-spacing: 0.125px; text-transform: uppercase;
+}
+
+/* Shimmer skeleton */
+@utility shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-muted) 0%,
+    var(--color-muted) 50%,
+    var(--color-surface-muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Grain-style hairline dividers */
+@utility hairline {
+  border-color: var(--color-hairline);
+}
