@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
@@ -58,6 +59,7 @@ export function SidebarBody({
 }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const pathname = usePathname();
 
   return (
     <div className="flex flex-col h-full">
@@ -80,45 +82,41 @@ export function SidebarBody({
         <ul className="space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
+            const isActive = item.end
+              ? pathname === item.to
+              : pathname === item.to || pathname.startsWith(`${item.to}/`);
             return (
               <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  end={item.end}
+                <Link
+                  href={item.to}
                   onClick={onNavigate}
                   title={isCollapsed ? t(item.labelKey) : undefined}
-                  className={({ isActive }) =>
-                    cn(
-                      "relative group flex items-center rounded-md text-sm transition-colors",
-                      isCollapsed ? "justify-center h-9 w-9 mx-auto p-0" : "gap-2.5 px-3 py-2",
-                      isActive
-                        ? "bg-sidebar-accent text-ink font-medium"
-                        : "text-ink-secondary hover:bg-sidebar-accent/60 hover:text-ink",
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <motion.span
-                          layoutId={`sidebar-active${layoutIdSuffix}`}
-                          transition={{ duration: 0.2, ease: "easeOut" }}
-                          className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-primary"
-                        />
-                      )}
-                      <Icon
-                        className={cn(
-                          "h-[18px] w-[18px] shrink-0",
-                          isActive
-                            ? "text-ink"
-                            : "text-ink-muted group-hover:text-ink-secondary",
-                        )}
-                        strokeWidth={1.75}
-                      />
-                      {!isCollapsed && <span className="truncate">{t(item.labelKey)}</span>}
-                    </>
+                  className={cn(
+                    "relative group flex items-center rounded-md text-sm transition-colors",
+                    isCollapsed ? "justify-center h-9 w-9 mx-auto p-0" : "gap-2.5 px-3 py-2",
+                    isActive
+                      ? "bg-sidebar-accent text-ink font-medium"
+                      : "text-ink-secondary hover:bg-sidebar-accent/60 hover:text-ink",
                   )}
-                </NavLink>
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId={`sidebar-active${layoutIdSuffix}`}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-primary"
+                    />
+                  )}
+                  <Icon
+                    className={cn(
+                      "h-[18px] w-[18px] shrink-0",
+                      isActive
+                        ? "text-ink"
+                        : "text-ink-muted group-hover:text-ink-secondary",
+                    )}
+                    strokeWidth={1.75}
+                  />
+                  {!isCollapsed && <span className="truncate">{t(item.labelKey)}</span>}
+                </Link>
               </li>
             );
           })}
@@ -163,14 +161,14 @@ export function SidebarBody({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 mb-2">
               <DropdownMenuItem asChild>
-                <NavLink
-                  to="/settings"
+                <Link
+                  href="/settings"
                   onClick={onNavigate}
                   className="flex w-full items-center gap-2 cursor-pointer"
                 >
                   <Settings className="h-4 w-4" strokeWidth={1.75} />
                   <span>{t("nav.settings")}</span>
-                </NavLink>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Search, Sun, Moon, Command, PanelLeftOpen, PanelLeftClose, Settings, LogOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -31,7 +32,7 @@ const CRUMB_KEYS: Record<string, string> = {
 };
 
 export function Topbar() {
-  const loc = useLocation();
+  const pathname = usePathname();
   const { t } = useTranslation();
   const { theme, toggle } = useTheme();
   const { open } = useCommandPalette();
@@ -56,7 +57,7 @@ export function Topbar() {
     window.dispatchEvent(new Event("sidebar-toggle"));
   };
 
-  const segments = loc.pathname.split("/").filter(Boolean);
+  const segments = (pathname || "/").split("/").filter(Boolean);
   const crumbs =
     segments.length === 0
       ? [{ label: t("nav.dashboard"), to: "/" }]
@@ -102,7 +103,7 @@ export function Topbar() {
           <span key={c.to} className="flex items-center gap-1.5 min-w-0">
             {i > 0 && <span className="text-ink-faint">/</span>}
             <Link
-              to={c.to}
+              href={c.to}
               className={cn(
                 "hover:text-ink transition-colors capitalize truncate",
                 i === crumbs.length - 1 && "text-ink font-medium",
@@ -164,7 +165,7 @@ export function Topbar() {
             </div>
             <DropdownMenuItem asChild>
               <Link
-                to="/settings"
+                href="/settings"
                 className="flex w-full items-center gap-2 cursor-pointer mt-1"
               >
                 <Settings className="h-4 w-4" strokeWidth={1.75} />

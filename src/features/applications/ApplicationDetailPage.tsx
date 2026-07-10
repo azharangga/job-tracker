@@ -1,4 +1,7 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -32,10 +35,9 @@ import { useState, useEffect } from "react";
 import { toast } from "@/lib/toast";
 import type { AppStatus, WorkMode, EmploymentType, Priority, Application } from "@/types";
 
-export function ApplicationDetailPage() {
+export function ApplicationDetailPage({ id }: { id: string }) {
   const { t } = useTranslation();
-  const { id = "" } = useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
   const qc = useQueryClient();
 
   const app = useQuery({ queryKey: ["application", id], queryFn: () => getApplication(id), enabled: !!id });
@@ -112,7 +114,7 @@ export function ApplicationDetailPage() {
     mutationFn: () => deleteApplication(id),
     onSuccess: () => {
       toast.success("Application deleted successfully");
-      navigate("/applications");
+      router.push("/applications");
       void qc.invalidateQueries({ queryKey: ["applications"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -165,7 +167,7 @@ export function ApplicationDetailPage() {
   if (!a) {
     return (
       <AppShell>
-        <p className="text-ink-muted">Application not found. <Link to="/applications" className="text-primary underline">Back to list</Link></p>
+        <p className="text-ink-muted">Application not found. <Link href="/applications" className="text-primary underline">Back to list</Link></p>
       </AppShell>
     );
   }
@@ -176,7 +178,7 @@ export function ApplicationDetailPage() {
   return (
     <AppShell>
       <div className="flex items-center justify-between mb-4">
-        <Link to="/applications" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink transition-colors">
+        <Link href="/applications" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-ink transition-colors">
           <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
           {t("applications.backToList")}
         </Link>

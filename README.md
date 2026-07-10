@@ -2,11 +2,11 @@
 
 # <img src="public/favicon.svg" width="36" height="36" style="vertical-align: middle; margin-right: 4px;" /> Job Tracker
 
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-20d5fd?style=flat-square&logo=react&logoColor=white)
-![TanStack Start](https://img.shields.io/badge/TanStack_Start-Framework-FF4154?style=flat-square&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?style=flat-square&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06b6d4?style=flat-square&logo=tailwindcss&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Turbopack](https://img.shields.io/badge/Turbopack-Bundler-FF4154?style=flat-square&logo=nextdotjs&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Database-3ecf8e?style=flat-square&logo=supabase&logoColor=white)
 
 </div>
@@ -15,7 +15,7 @@
 
 ## Deskripsi Proyek
 
-Job Tracker adalah aplikasi web modern dan profesional yang dirancang khusus untuk mempermudah pencari kerja dalam mengelola, melacak, dan menganalisis seluruh proses lamaran pekerjaan mereka secara terpusat. Aplikasi ini dibangun di atas arsitektur Single Page Application (SPA) berbasis React, TypeScript, dan Tailwind CSS, dengan dukungan integrasi database serta autentikasi kustom melalui serverless backend Supabase Edge Functions. Sistem ini didesain menggunakan pendekatan Notion-inspired paper design yang monokromatis dan berestetika premium untuk memberikan kenyamanan navigasi yang optimal tanpa beban kognitif tinggi bagi penggunanya.
+Job Tracker adalah aplikasi web modern dan profesional yang dirancang khusus untuk mempermudah pencari kerja dalam mengelola, melacak, dan menganalisis seluruh proses lamaran pekerjaan mereka secara terpusat. Aplikasi ini dibangun di atas arsitektur Next.js App Router dengan React 19, TypeScript, dan Tailwind CSS 4, dengan dukungan integrasi database serta autentikasi kustom melalui serverless backend Supabase Edge Functions. Sistem ini didesain menggunakan pendekatan Notion-inspired paper design yang monokromatis dan berestetika premium untuk memberikan kenyamanan navigasi yang optimal tanpa beban kognitif tinggi bagi penggunanya.
 
 - - -
 
@@ -39,46 +39,77 @@ Berikut adalah struktur direktori utama proyek yang bersih dari file penunjang y
 
 ```text
 job-tracker/
-├── public/                   # Aset statis aplikasi (Favicon, logo, gambar)
-├── src/                      # Direktori utama kode sumber aplikasi
-│   ├── app/                  # Entry point routing dan inisialisasi aplikasi
-│   ├── components/           # Komponen antarmuka pengguna (UI) reusable
-│   │   ├── common/           # Komponen dasar (Avatar, badge, dialog, logo)
-│   │   ├── layout/           # Komponen tata letak (AppShell, sidebar, topbar)
-│   │   └── ui/               # Komponen dasar Radix UI dan elemen primitif
-│   ├── constants/            # Berkas penyimpanan variabel konstanta global
-│   ├── contexts/             # React Context untuk manajemen state global
-│   │   ├── AuthContext.tsx   # Manajemen sesi autentikasi dan otorisasi pengguna
-│   │   └── ThemeContext.tsx  # Manajemen pergantian mode tema aplikasi
-│   ├── hooks/                # Kustom React hooks untuk logika terbagi
-│   ├── i18n/                 # Konfigurasi lokalisasi dan file terjemahan
-│   │   └── locales/          # Kamus terjemahan (en.json, id.json)
-│   ├── integrations/         # Penghubung client dengan server eksternal
-│   │   └── supabase/         # Konfigurasi instansiasi Supabase client SDK
-│   ├── lib/                  # Fungsi pembantu utilitas eksternal (toast, format, utils)
-│   ├── pages/                # Halaman utama aplikasi berbasis rute
-│   │   └── applications/     # Halaman daftar dan detail manajemen lamaran
-│   ├── routes/               # Konfigurasi routing modular aplikasi
-│   ├── services/             # Deklarasi fungsi layanan API (CRUD data)
-│   ├── types/                # Pendefinisian tipe data TypeScript
-│   ├── routeTree.gen.ts      # Berkas routing otomatis hasil generate TanStack Router
-│   ├── router.tsx            # Konfigurasi router utama aplikasi
-│   ├── server.ts             # Integrasi server-side rendering
-│   ├── start.ts              # Konfigurasi bootstrap awal aplikasi
-│   └── styles.css            # Berkas CSS global utama dan konfigurasi Tailwind
-├── supabase/                 # Konfigurasi lokal Supabase Edge Functions
-│   └── functions/            # Direktori serverless function
-│       └── auth/             # Fungsi serverless penanganan autentikasi (index.ts)
-├── .env.example              # Contoh konfigurasi variabel lingkungan
-├── .gitignore                # Berkas pengecualian pelacakan Git
-├── .prettierignore           # Pengecualian pemformatan Prettier
-├── .prettierrc               # Konfigurasi pemformatan kode Prettier
-├── components.json           # Konfigurasi eksternal komponen UI
-├── eslint.config.js          # Konfigurasi aturan linter proyek
-├── package-lock.json         # Log penguncian versi dependensi npm
-├── package.json              # Daftar dependensi dan perintah kerja npm
-├── tsconfig.json             # Konfigurasi compiler TypeScript
-└── vite.config.ts            # Konfigurasi build tool Vite
+├── public/
+│   └── favicon.svg                         # Ikon aplikasi (SVG)
+├── src/
+│   ├── app/                                # Next.js App Router — definisi seluruh rute
+│   │   ├── (app)/                          # Route group: halaman utama (dilindungi auth)
+│   │   │   ├── analytics/                  # Halaman analitik & statistik lamaran
+│   │   │   ├── applications/               # Halaman daftar & detail lamaran kerja
+│   │   │   ├── calendar/                   # Halaman kalender tenggat & wawancara
+│   │   │   ├── companies/                  # Halaman manajemen data perusahaan
+│   │   │   ├── contacts/                   # Halaman manajemen kontak perekrut
+│   │   │   ├── documents/                  # Halaman manajemen dokumen (CV, porto)
+│   │   │   ├── kanban/                     # Halaman kanban board status lamaran
+│   │   │   ├── notes/                      # Halaman catatan bebas
+│   │   │   ├── settings/                   # Halaman pengaturan akun & preferensi
+│   │   │   ├── tasks/                      # Halaman daftar tugas (to-do)
+│   │   │   ├── layout.tsx                  # Layout dengan AppShell (Sidebar + Topbar)
+│   │   │   └── page.tsx                    # Root redirect ke /applications
+│   │   ├── (auth)/                         # Route group: halaman autentikasi
+│   │   │   └── login/                      # Halaman login
+│   │   ├── error.tsx                       # Global error boundary Next.js
+│   │   ├── layout.tsx                      # Root layout (font, metadata, providers)
+│   │   ├── loading.tsx                     # Global loading skeleton
+│   │   └── not-found.tsx                   # Halaman 404
+│   ├── components/
+│   │   ├── common/                         # Komponen reusable lintas fitur (Avatar, Badge, Logo)
+│   │   ├── layout/                         # Komponen tata letak (AppShell, Sidebar, Topbar)
+│   │   └── ui/                             # Komponen primitif berbasis Radix UI (shadcn/ui)
+│   ├── constants/                          # Variabel konstanta & enum domain aplikasi
+│   ├── contexts/
+│   │   ├── AuthContext.tsx                 # Manajemen sesi autentikasi & otorisasi
+│   │   ├── CommandPaletteContext.tsx       # State command palette global (Ctrl+K)
+│   │   └── ThemeContext.tsx                # Manajemen pergantian tema (light / dark)
+│   ├── features/                           # Komponen halaman per fitur (dirender App Router)
+│   │   ├── applications/                   # Sub-komponen halaman lamaran (form, detail)
+│   │   ├── AnalyticsPage.tsx               # Komponen halaman analitik
+│   │   ├── CalendarPage.tsx                # Komponen halaman kalender
+│   │   ├── CompaniesPage.tsx               # Komponen halaman perusahaan
+│   │   ├── ContactsPage.tsx                # Komponen halaman kontak
+│   │   ├── DashboardPage.tsx               # Komponen halaman dashboard utama
+│   │   ├── DocumentsPage.tsx               # Komponen halaman dokumen
+│   │   ├── LoginPage.tsx                   # Komponen halaman login
+│   │   ├── NotesPage.tsx                   # Komponen halaman catatan
+│   │   ├── SettingsPage.tsx                # Komponen halaman pengaturan
+│   │   └── TasksPage.tsx                   # Komponen halaman tugas
+│   ├── hooks/                              # Custom React hooks (data fetching, UI)
+│   ├── i18n/
+│   │   ├── index.ts                        # Konfigurasi & inisialisasi i18next
+│   │   └── locales/                        # Kamus terjemahan (en.json, id.json)
+│   ├── integrations/
+│   │   └── supabase/                       # Konfigurasi & instansiasi Supabase client SDK
+│   ├── lib/                                # Fungsi utilitas umum (toast, format, utils)
+│   ├── providers/
+│   │   ├── ProtectedLayout.tsx             # Guard autentikasi — redirect ke /login jika belum login
+│   │   └── RootProviders.tsx               # Provider root (React Query, Theme, Auth)
+│   ├── services/                           # Fungsi layanan API — operasi CRUD ke Supabase
+│   ├── types/                              # Definisi tipe data TypeScript global
+│   └── styles.css                          # CSS global & konfigurasi Tailwind CSS 4
+├── supabase/
+│   └── functions/
+│       └── auth/                           # Serverless Edge Function autentikasi (Bcrypt)
+├── .env.example                            # Contoh konfigurasi variabel lingkungan
+├── .gitignore                              # Daftar file & folder yang diabaikan Git
+├── .prettierignore                         # Pengecualian pemformatan Prettier
+├── .prettierrc                             # Konfigurasi aturan pemformatan Prettier
+├── components.json                         # Konfigurasi komponen shadcn/ui
+├── eslint.config.js                        # Konfigurasi aturan linter ESLint
+├── next-env.d.ts                           # Deklarasi tipe otomatis Next.js (jangan diedit)
+├── next.config.ts                          # Konfigurasi build & runtime Next.js
+├── package.json                            # Daftar dependensi & skrip npm
+├── postcss.config.mjs                      # Konfigurasi PostCSS (@tailwindcss/postcss)
+└── tsconfig.json                           # Konfigurasi compiler TypeScript
 ```
 
 - - -
@@ -105,8 +136,9 @@ job-tracker/
 
 3. Buka berkas `.env` dan isi variabel lingkungan yang dibutuhkan menggunakan kredensial proyek Supabase Anda:
    ```env
-   VITE_SUPABASE_URL=https://proyek-supabase-anda.supabase.co
-   VITE_SUPABASE_ANON_KEY=kunci-anon-proyek-supabase-anda
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ```
 
 4. Instal seluruh dependensi perangkat lunak yang dideklarasikan pada proyek menggunakan npm:
@@ -120,11 +152,11 @@ job-tracker/
 
 ### Mode Pengembangan (Development)
 
-Untuk menjalankan server pengembangan lokal dengan fitur Hot Module Replacement (HMR) aktif, jalankan perintah berikut:
+Untuk menjalankan server pengembangan lokal dengan fitur Fast Refresh aktif menggunakan Turbopack, jalankan perintah berikut:
 ```bash
 npm run dev
 ```
-Setelah berjalan, Anda dapat mengakses antarmuka aplikasi melalui browser di tautan `http://localhost:5173`.
+Setelah berjalan, Anda dapat mengakses antarmuka aplikasi melalui browser di tautan `http://localhost:3000`.
 
 ### Mode Produksi (Production Build)
 
@@ -133,9 +165,9 @@ Setelah berjalan, Anda dapat mengakses antarmuka aplikasi melalui browser di tau
    npm run build
    ```
 
-2. Pratinjau hasil build produksi secara lokal sebelum melakukan deployment akhir:
+2. Jalankan server produksi secara lokal setelah proses build selesai:
    ```bash
-   npm run preview
+   npm run start
    ```
 
 ### Penyelarasan Standar Kode (Linting & Formatting)

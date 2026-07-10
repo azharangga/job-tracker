@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { toast } from "@/lib/toast";
 import {
   AreaChart,
@@ -300,7 +300,7 @@ export function DashboardPage() {
               <div className="text-eyebrow text-ink-muted">{t("dashboard.recentApplications")}</div>
               <div className="text-title text-ink mt-1">{t("dashboard.newestActivity")}</div>
             </div>
-            <Link to="/applications" className="text-sm text-primary hover:text-primary-active transition-colors">
+            <Link href="/applications" className="text-sm text-primary hover:text-primary-active transition-colors">
               {t("dashboard.viewAll")}
             </Link>
           </div>
@@ -308,7 +308,7 @@ export function DashboardPage() {
             {applications.slice(0, 6).map((a) => (
               <li key={a.id}>
                 <Link
-                  to={`/applications/${a.id}`}
+                  href={`/applications/${a.id}`}
                   className="flex items-center gap-3 px-5 py-3.5 hover:bg-surface-muted/60 transition-colors"
                 >
                   <CompanyAvatar name={a.company?.name ?? a.position} logoUrl={a.company?.logo_url} size={36} />

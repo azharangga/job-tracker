@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
@@ -247,7 +247,7 @@ export function ApplicationsListPage() {
                     className="border-b border-hairline last:border-0 relative group"
                   >
                     <Link
-                      to={`/applications/${a.id}`}
+                      href={`/applications/${a.id}`}
                       className={cn(
                         "grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1.2fr_32px] items-center gap-4 px-5 py-3.5 hover:bg-surface-muted/50 transition-colors",
                       )}
@@ -304,7 +304,7 @@ export function ApplicationsListPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link to={`/applications/${a.id}`}>
+                            <Link href={`/applications/${a.id}`}>
                               <Eye className="h-3.5 w-3.5 mr-2" />
                               {t("common.view")}
                             </Link>
@@ -328,7 +328,7 @@ export function ApplicationsListPage() {
               <li key={a.id} className="rounded-lg bg-surface border border-hairline p-3 shadow-soft">
                 <div className="flex items-start gap-3">
                   <CompanyAvatar name={a.company?.name ?? a.position} logoUrl={a.company?.logo_url} size={36} />
-                  <Link to={`/applications/${a.id}`} className="flex-1 min-w-0">
+                  <Link href={`/applications/${a.id}`} className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-ink truncate">
                       {(page - 1) * pageSize + i + 1}. {a.position}
                     </div>

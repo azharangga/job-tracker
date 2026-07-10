@@ -10,6 +10,7 @@ import {
 import type { User } from "@/types";
 import { callAuth, clearSession, loadSession, saveSession } from "@/lib/session";
 import { toast } from "@/lib/toast";
+import { useRouter } from "next/navigation";
 
 interface AuthContextValue {
   user: User | null;
@@ -57,6 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  const router = useRouter();
+
   const login = useCallback(
     async (email: string, password: string, remember: boolean) => {
       const { token: t, user: u } = await callAuth<{ token: string; user: User }>(
@@ -67,8 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.setItem("show_login_success", "true");
       setUser(u);
       setToken(t);
+      const redirectTo = sessionStorage.getItem("redirectAfterLogin") || "/applications";
+      sessionStorage.removeItem("redirectAfterLogin");
+      router.replace(redirectTo);
     },
-    [],
+    [router],
   );
 
   const logout = useCallback(async () => {

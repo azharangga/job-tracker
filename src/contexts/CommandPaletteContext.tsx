@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import {
   CommandDialog,
   CommandEmpty,
@@ -45,7 +45,7 @@ const CommandPaletteCtx = createContext<Ctx | null>(null);
 
 export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const [isOpen, setOpen] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
   const { theme, toggle } = useTheme();
   const { logout } = useAuth();
 
@@ -69,7 +69,7 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
     [setOpen],
   );
 
-  const go = (path: string) => run(() => navigate(path));
+  const go = (path: string) => run(() => router.push(path));
 
   return (
     <CommandPaletteCtx.Provider

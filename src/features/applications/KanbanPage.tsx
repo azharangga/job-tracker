@@ -17,7 +17,7 @@ import { PriorityBadge } from "@/components/common/badges";
 import { listApplications, moveStatus } from "@/services";
 import { APP_STATUS_LABELS, APP_STATUS_STICKER, KANBAN_COLUMNS } from "@/constants";
 import type { Application, AppStatus } from "@/types";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export function KanbanPage() {
@@ -124,7 +124,7 @@ function KanbanCard({ app }: { app: Application }) {
           <CompanyAvatar name={app.company?.name ?? app.position} size={28} />
           <div className="flex-1 min-w-0">
             <Link
-              to={`/applications/${app.id}`}
+              href={`/applications/${app.id}`}
               onClick={(e) => e.stopPropagation()}
               className="text-sm font-medium text-ink hover:text-primary transition-colors truncate block"
             >

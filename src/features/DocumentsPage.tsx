@@ -187,7 +187,7 @@ export function DocumentsPage() {
                   {d.storage_path && (
                     <>
                       <button
-                        onClick={() => handleOpenPreview(d.name, d.storage_path, d.mime || "")}
+                        onClick={() => handleOpenPreview(d.name, d.storage_path!, d.mime || "")}
                         className="h-7 w-7 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink-muted hover:text-ink transition-colors cursor-pointer"
                         title={t("common.view", "View")}
                       >
