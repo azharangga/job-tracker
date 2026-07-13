@@ -266,12 +266,43 @@
   "documents": {
     "title": "Dokumen",
     "upload": "Unggah",
-    "description": "Simpan dan kelola CV, portofolio, serta cover letter Anda.",
+    "description": "Simpan dan kelola dokumen Anda secara terpusat.",
     "filter": {
       "all": "Semua"
     },
     "created": "Dokumen diunggah",
-    "deleted": "Dokumen dihapus"
+    "deleted": "Dokumen dihapus",
+    "edit": "Edit Dokumen",
+    "deleteConfirm": "Apakah Anda yakin ingin menghapus dokumen ini? Tindakan ini permanen.",
+    "form": {
+      "name": "Nama Dokumen",
+      "kind": "Tipe Dokumen",
+      "replaceFile": "Ganti File (Opsional)",
+      "file": "File",
+      "version": "Versi",
+      "description": "Deskripsi (Opsional)"
+    },
+    "viewer": {
+      "loading": "Memuat dokumen...",
+      "notFound": "Dokumen tidak ditemukan",
+      "size": "Ukuran",
+      "uploaded": "Diunggah",
+      "version": "Versi",
+      "back": "Kembali",
+      "download": "Unduh",
+      "open": "Buka",
+      "rowsPerPage": "Baris per halaman:",
+      "pageOf": "Halaman {{current}} dari {{total}}",
+      "showing": "Menampilkan {{start}} sampai {{end}} dari {{total}} entri",
+      "filteredFrom": "(difilter dari {{total}} total)",
+      "searchColumn": "Cari kolom ini...",
+      "apply": "Terapkan",
+      "clear": "Bersihkan",
+      "sortAsc": "Urutkan A-Z",
+      "sortDesc": "Urutkan Z-A",
+      "noRecords": "Data tidak ditemukan",
+      "descriptionLabel": "Deskripsi"
+    }
   },
   "calendar": {
     "title": "Kalender",

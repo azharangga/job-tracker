@@ -429,3 +429,21 @@ export async function deleteDocument(id: string) {
   const filtered = docs.filter(d => d.id !== id);
   setLocalData("documents", filtered);
 }
+
+export async function getDocument(id: string): Promise<DocumentRow | null> {
+  const docs = getLocalData("documents") as DocumentRow[];
+  return docs.find((d) => d.id === id) || null;
+}
+
+export async function updateDocument(id: string, patch: Partial<DocumentRow>) {
+  const docs = getLocalData("documents") as DocumentRow[];
+  const idx = docs.findIndex((d) => d.id === id);
+  if (idx !== -1) {
+    docs[idx] = { ...docs[idx], ...patch, updated_at: new Date().toISOString() };
+    setLocalData("documents", docs);
+    return docs[idx];
+  }
+  throw new Error("Document not found");
+}
+
+

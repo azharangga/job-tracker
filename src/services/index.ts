@@ -151,3 +151,13 @@ export function createDocument(patch: Partial<DocumentRow>): Promise<DocumentRow
 export function deleteDocument(id: string): Promise<void> {
   return isDemo() ? demoRepo.deleteDocument(id) : liveRepo.deleteDocument(id);
 }
+
+export function getDocument(id: string): Promise<DocumentRow | null> {
+  return isDemo() ? demoRepo.getDocument(id) : liveRepo.getDocument(id);
+}
+
+export function updateDocument(id: string, patch: Partial<DocumentRow>): Promise<DocumentRow> {
+  return isDemo() ? demoRepo.updateDocument(id, patch) : liveRepo.updateDocument(id, patch);
+}
+
+

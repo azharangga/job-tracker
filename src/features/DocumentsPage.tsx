@@ -1,10 +1,12 @@
+"use client";
+
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Upload, Trash2, Download, Eye } from "lucide-react";
+import { FileText, Upload, Trash2, Download, Pencil, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { StickerBadge } from "@/components/common/StickerBadge";
 import { EmptyState } from "@/components/common/EmptyState";
-import { listDocuments, createDocument, deleteDocument, uploadDocumentFile } from "@/services";
+import { listDocuments, createDocument, deleteDocument, uploadDocumentFile, updateDocument } from "@/services";
 import { DOCUMENT_KIND_LABELS } from "@/constants";
 import { fileSize, formatDate } from "@/lib/format";
 import type { DocumentKind } from "@/types";
@@ -13,6 +15,7 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -27,12 +30,17 @@ const KIND_COLOR: Record<DocumentKind, "sky" | "purple" | "pink" | "orange" | "t
   certificate: "green",
   transcript: "teal",
   photo: "pink",
+  pdf: "sky",
+  spreadsheet: "green",
+  word: "sky",
+  powerpoint: "orange",
   other: "muted",
 };
 
 export function DocumentsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const router = useRouter();
   const { data = [] } = useQuery({ queryKey: ["documents"], queryFn: listDocuments });
   const [filter, setFilter] = useState<DocumentKind | "all">("all");
   
@@ -44,48 +52,76 @@ export function DocumentsPage() {
   
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
+  // Edit states
+  const [editDoc, setEditDoc] = useState<any | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editKind, setEditKind] = useState<DocumentKind>("cv");
+  const [editVersion, setEditVersion] = useState(1);
+  const [editDescription, setEditDescription] = useState("");
+  const [editFile, setEditFile] = useState<File | null>(null);
+
   // Preview States
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState("");
   const [previewMime, setPreviewMime] = useState("");
-  const [previewContent, setPreviewContent] = useState<string | null>(null);
-  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [previewStoragePath, setPreviewStoragePath] = useState("");
+  const [zoom, setZoom] = useState(100);
 
   const items = filter === "all" ? data : data.filter((d) => d.kind === filter);
 
   const handleOpenPreview = async (name: string, path: string, mime: string) => {
     setPreviewName(name);
     setPreviewMime(mime);
-    setPreviewContent(null);
+    setPreviewStoragePath(path);
+    setZoom(100);
     setPreviewOpen(true);
 
     const publicUrl = supabase.storage.from("documents").getPublicUrl(path).data.publicUrl;
     setPreviewUrl(publicUrl);
-
-    const isText =
-      mime.startsWith("text/") ||
-      name.endsWith(".json") ||
-      name.endsWith(".md") ||
-      name.endsWith(".txt") ||
-      mime === "application/json";
-
-    if (isText) {
-      setLoadingPreview(true);
-      try {
-        const res = await fetch(publicUrl);
-        if (!res.ok) throw new Error("Failed to load text content");
-        const text = await res.text();
-        setPreviewContent(text);
-      } catch (err) {
-        setPreviewContent("Error loading content preview.");
-        console.error(err);
-      } finally {
-        setLoadingPreview(false);
-      }
-    }
   };
   
+  const handleViewDocument = (d: (typeof data)[number]) => {
+    const name = d.name;
+    const mime = d.mime || "";
+    const path = d.storage_path || "";
+    if (!path) return;
+
+    const isImage = mime.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(name);
+    const isPdf = mime === "application/pdf" || /\.pdf$/i.test(name);
+    const isSpreadsheet =
+      mime === "text/csv" ||
+      mime === "application/vnd.ms-excel" ||
+      mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+      /\.(xlsx|xls|csv)$/i.test(name);
+
+    if (isImage) {
+      handleOpenPreview(name, path, mime);
+    } else if (isPdf) {
+      router.push(`/documents/pdf/${d.id}`);
+    } else if (isSpreadsheet) {
+      router.push(`/documents/spreadsheet/${d.id}`);
+    } else {
+      router.push(`/documents/file/${d.id}`);
+    }
+  };
+
+  const handleDownloadFile = (storagePath: string, name: string) => {
+    try {
+      const publicUrl = supabase.storage.from("documents").getPublicUrl(storagePath).data.publicUrl;
+      const link = document.createElement("a");
+      link.href = publicUrl;
+      link.setAttribute("download", name);
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.error(e);
+      toast.error("Download failed.");
+    }
+  };
+
   const handleUpload = async () => {
     if (!selectedFile) {
       toast.error("Please select a file to upload.");
@@ -107,6 +143,40 @@ export function DocumentsPage() {
       setSelectedFile(null);
       setVersion(1);
       setDescription("");
+      void qc.invalidateQueries({ queryKey: ["documents"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editDoc) return;
+    try {
+      let patch: any = {
+        name: editName,
+        kind: editKind,
+        version: editVersion,
+        description: editDescription || null,
+      };
+
+      if (editFile) {
+        const storagePath = await uploadDocumentFile(editFile);
+        if (editDoc.storage_path) {
+          try {
+            await supabase.storage.from("documents").remove([editDoc.storage_path]);
+          } catch (err) {
+            console.error("Failed to delete old storage file:", err);
+          }
+        }
+        patch.storage_path = storagePath;
+        patch.size = editFile.size;
+        patch.mime = editFile.type;
+      }
+
+      await updateDocument(editDoc.id, patch);
+      toast.success("Document updated successfully.");
+      setEditDoc(null);
+      setEditFile(null);
       void qc.invalidateQueries({ queryKey: ["documents"] });
     } catch (e) {
       toast.error((e as Error).message);
@@ -147,7 +217,7 @@ export function DocumentsPage() {
       />
 
       <div className="mb-4 flex flex-wrap gap-1.5">
-        <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>All</FilterChip>
+        <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>{t("documents.filter.all")}</FilterChip>
         {(Object.keys(DOCUMENT_KIND_LABELS) as DocumentKind[]).map((k) => (
           <FilterChip key={k} active={filter === k} onClick={() => setFilter(k)}>{DOCUMENT_KIND_LABELS[k]}</FilterChip>
         ))}
@@ -169,7 +239,13 @@ export function DocumentsPage() {
                     <FileText className="h-5 w-5" strokeWidth={1.75} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-ink truncate" title={d.name}>{d.name}</div>
+                    <button
+                      onClick={() => handleViewDocument(d)}
+                      className="text-sm font-semibold text-ink hover:text-primary transition-colors truncate text-left w-full cursor-pointer block"
+                      title={d.name}
+                    >
+                      {d.name}
+                    </button>
                     <div className="text-xs text-ink-muted mt-0.5">{fileSize(d.size)}</div>
                   </div>
                 </div>
@@ -187,23 +263,28 @@ export function DocumentsPage() {
                   {d.storage_path && (
                     <>
                       <button
-                        onClick={() => handleOpenPreview(d.name, d.storage_path!, d.mime || "")}
+                        onClick={() => handleDownloadFile(d.storage_path!, d.name)}
                         className="h-7 w-7 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink-muted hover:text-ink transition-colors cursor-pointer"
-                        title={t("common.view", "View")}
-                      >
-                        <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
-                      </button>
-                      <a
-                        href={supabase.storage.from("documents").getPublicUrl(d.storage_path).data.publicUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="h-7 w-7 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink-muted hover:text-ink transition-colors cursor-pointer"
-                        title="Download/Open"
+                        title="Download"
                       >
                         <Download className="h-3.5 w-3.5" strokeWidth={1.75} />
-                      </a>
+                      </button>
                     </>
                   )}
+                  <button
+                    onClick={() => {
+                      setEditDoc(d);
+                      setEditName(d.name);
+                      setEditKind(d.kind);
+                      setEditVersion(d.version);
+                      setEditDescription(d.description || "");
+                      setEditFile(null);
+                    }}
+                    className="h-7 w-7 grid place-items-center rounded-md border border-hairline bg-surface text-ink hover:bg-surface-muted transition-colors cursor-pointer"
+                    title="Edit"
+                  >
+                    <Pencil className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  </button>
                   <button
                     onClick={() => setConfirmId(d.id)}
                     className="h-7 w-7 grid place-items-center rounded-md border border-hairline bg-surface text-destructive hover:bg-destructive/5 transition-colors cursor-pointer"
@@ -229,7 +310,7 @@ export function DocumentsPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">
-              Document type
+              {t("documents.form.kind")}
             </label>
             <select
               value={kind}
@@ -246,7 +327,7 @@ export function DocumentsPage() {
 
           <div>
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">
-              File
+              {t("documents.form.file")}
             </label>
             <input
               type="file"
@@ -257,12 +338,93 @@ export function DocumentsPage() {
 
           <div>
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">
-              Description (Optional)
+              {t("documents.form.description")}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g. CV for UI/UX Designer role"
+              className="w-full h-20 rounded-md border border-hairline bg-surface p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+            />
+          </div>
+        </div>
+      </FormDialog>
+
+      {/* Edit Dialog */}
+      <FormDialog
+        open={editDoc !== null}
+        onOpenChange={(open) => !open && setEditDoc(null)}
+        title={t("documents.edit")}
+        onSubmit={handleUpdate}
+        submitLabel={t("common.save", "Save Changes")}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-ink-muted mb-1.5">
+              {t("documents.form.name")}
+            </label>
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="w-full h-9 rounded-md border border-hairline bg-surface px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-ink-muted mb-1.5">
+              {t("documents.form.kind")}
+            </label>
+            <select
+              value={editKind}
+              onChange={(e) => setEditKind(e.target.value as DocumentKind)}
+              className="w-full h-9 rounded-md border border-hairline bg-surface px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              {(Object.keys(DOCUMENT_KIND_LABELS) as DocumentKind[]).map((k) => (
+                <option key={k} value={k}>
+                  {DOCUMENT_KIND_LABELS[k]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-ink-muted mb-1.5">
+              {t("documents.form.version")}
+            </label>
+            <input
+              type="number"
+              value={editVersion}
+              onChange={(e) => setEditVersion(Number(e.target.value))}
+              min={1}
+              className="w-full h-9 rounded-md border border-hairline bg-surface px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-ink-muted mb-1.5">
+              {t("documents.form.replaceFile")}
+            </label>
+            <input
+              type="file"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                setEditFile(file);
+                if (file) {
+                  setEditName(file.name);
+                }
+              }}
+              className="w-full text-sm text-ink-secondary file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border file:border-hairline file:text-xs file:font-semibold file:bg-surface file:text-ink hover:file:bg-surface-muted cursor-pointer"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-ink-muted mb-1.5">
+              {t("documents.form.description")}
+            </label>
+            <textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
               className="w-full h-20 rounded-md border border-hairline bg-surface p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
@@ -275,86 +437,65 @@ export function DocumentsPage() {
         onOpenChange={(open) => !open && setConfirmId(null)}
         onConfirm={handleDelete}
         title={t("documents.deleted")}
-        description="Are you sure you want to delete this document? This action is permanent."
+        description={t("documents.deleteConfirm")}
       />
 
-      {/* Document Preview Dialog */}
+      {/* Image Document Preview Dialog */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-4xl w-[calc(100vw-2rem)] h-[85vh] flex flex-col p-6 gap-4">
-          <DialogHeader className="border-b border-hairline pb-3 shrink-0">
-            <DialogTitle className="text-base font-semibold text-ink truncate max-w-[85vw]" title={previewName}>
+          <DialogHeader className="border-b border-hairline pb-3 shrink-0 flex flex-row items-center justify-between">
+            <DialogTitle className="text-base font-semibold text-ink truncate max-w-[50vw]" title={previewName}>
               {previewName}
             </DialogTitle>
+            {previewUrl && (
+              <div className="flex items-center gap-1.5 mr-6">
+                <button
+                  onClick={() => setZoom((z) => Math.max(50, z - 25))}
+                  className="h-8 w-8 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink-muted hover:text-ink cursor-pointer"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </button>
+                <span className="text-xs font-mono text-ink-muted w-12 text-center">{zoom}%</span>
+                <button
+                  onClick={() => setZoom((z) => Math.min(300, z + 25))}
+                  className="h-8 w-8 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink-muted hover:text-ink cursor-pointer"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setZoom(100)}
+                  className="h-8 w-8 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink-muted hover:text-ink cursor-pointer"
+                  title="Reset Zoom"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleDownloadFile(previewStoragePath, previewName)}
+                  className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary-active cursor-pointer"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download
+                </button>
+              </div>
+            )}
           </DialogHeader>
 
-          <div className="flex-1 min-h-0 w-full overflow-hidden flex items-center justify-center bg-surface-muted/50 rounded-lg border border-hairline">
-            {loadingPreview ? (
+          <div className="flex-1 min-h-0 w-full overflow-auto flex items-center justify-center bg-surface-muted/50 rounded-lg border border-hairline p-4">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt={previewName}
+                style={{ transform: `scale(${zoom / 100})`, transformOrigin: "center center" }}
+                className="max-h-[65vh] object-contain max-w-full transition-transform duration-200 animate-fade-in"
+              />
+            ) : (
               <div className="text-sm text-ink-muted flex items-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 Loading preview...
               </div>
-            ) : previewUrl ? (
-              (() => {
-                const isImage = previewMime.startsWith("image/");
-                const isPdf = previewMime === "application/pdf";
-                const isText =
-                  previewMime.startsWith("text/") ||
-                  previewName.endsWith(".json") ||
-                  previewName.endsWith(".md") ||
-                  previewName.endsWith(".txt") ||
-                  previewMime === "application/json";
-
-                if (isImage) {
-                  return (
-                    <img
-                      src={previewUrl}
-                      alt={previewName}
-                      className="max-h-[65vh] object-contain max-w-full p-2 animate-fade-in"
-                    />
-                  );
-                }
-
-                if (isPdf) {
-                  return (
-                    <iframe
-                      src={previewUrl}
-                      title={previewName}
-                      className="w-full h-full border-none rounded-lg"
-                    />
-                  );
-                }
-
-                if (isText) {
-                  return (
-                    <pre className="w-full h-full p-4 overflow-auto text-xs font-mono whitespace-pre-wrap text-ink bg-surface select-text">
-                      {previewContent}
-                    </pre>
-                  );
-                }
-
-                // Fallback for unsupported mime types (docx, zip, etc)
-                return (
-                  <div className="flex flex-col items-center justify-center p-8 text-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-surface border border-hairline shadow-soft flex items-center justify-center text-ink-muted">
-                      <FileText className="h-8 w-8" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-ink">Preview not available</div>
-                      <div className="text-xs text-ink-muted mt-1">This file type ({previewMime || "unknown"}) cannot be previewed directly in the browser.</div>
-                    </div>
-                    <a
-                      href={previewUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors cursor-pointer"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download File
-                    </a>
-                  </div>
-                );
-              })()
-            ) : null}
+            )}
           </div>
         </DialogContent>
       </Dialog>

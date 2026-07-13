@@ -29,6 +29,10 @@ export type DocumentKind =
   | "certificate"
   | "transcript"
   | "photo"
+  | "pdf"
+  | "spreadsheet"
+  | "word"
+  | "powerpoint"
   | "other";
 export type EventKind =
   | "interview"

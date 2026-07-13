@@ -323,3 +323,26 @@ export async function deleteDocument(id: string) {
   const { error } = await supabase.from("documents").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function getDocument(id: string): Promise<DocumentRow | null> {
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data as unknown as DocumentRow | null;
+}
+
+export async function updateDocument(id: string, patch: Partial<DocumentRow>) {
+  const { data, error } = await supabase
+    .from("documents")
+    .update(patch as never)
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as unknown as DocumentRow;
+}
+
+

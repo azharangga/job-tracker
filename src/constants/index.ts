@@ -130,6 +130,10 @@ export const DOCUMENT_KIND_LABELS: Record<DocumentKind, string> = {
   certificate: "Certificate",
   transcript: "Transcript",
   photo: "Photo",
+  pdf: "PDF",
+  spreadsheet: "Spreadsheet",
+  word: "Word Document",
+  powerpoint: "PowerPoint",
   other: "Other",
 };
 
