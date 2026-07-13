@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Upload, Trash2, Download, Pencil, ZoomIn, ZoomOut, RotateCcw, Share2 } from "lucide-react";
+import { FileText, Upload, Trash2, Download, Pencil, ZoomIn, ZoomOut, RotateCcw, Share2, Loader2 } from "lucide-react";
+import * as XLSX from "xlsx";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { StickerBadge } from "@/components/common/StickerBadge";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -16,6 +17,7 @@ import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +43,7 @@ export function DocumentsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const router = useRouter();
+  const auth = useAuth();
   const { data = [] } = useQuery({ queryKey: ["documents"], queryFn: listDocuments });
   const [filter, setFilter] = useState<DocumentKind | "all">("all");
   
@@ -51,6 +54,13 @@ export function DocumentsPage() {
   const [description, setDescription] = useState("");
   
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [downloadDoc, setDownloadDoc] = useState<any | null>(null);
+
+  // Share Sheet States
+  const [shareDoc, setShareDoc] = useState<any | null>(null);
+  const [shareSheetNames, setShareSheetNames] = useState<string[]>([]);
+  const [selectedSheets, setSelectedSheets] = useState<Record<number, boolean>>({});
+  const [isLoadingShareSheets, setIsLoadingShareSheets] = useState(false);
 
   // Edit states
   const [editDoc, setEditDoc] = useState<any | null>(null);
@@ -107,19 +117,29 @@ export function DocumentsPage() {
     }
   };
 
-  const handleDownloadFile = (storagePath: string, name: string) => {
+  const handleDownloadFile = async (storagePath: string, name: string) => {
     try {
       const publicUrl = supabase.storage.from("documents").getPublicUrl(storagePath).data.publicUrl;
+      const res = await fetch(publicUrl);
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = publicUrl;
+      link.href = blobUrl;
       link.setAttribute("download", name);
       link.style.display = "none";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
     } catch (e) {
       console.error(e);
-      toast.error("Download failed.");
+      // fallback
+      try {
+        const publicUrl = supabase.storage.from("documents").getPublicUrl(storagePath).data.publicUrl;
+        window.open(publicUrl, "_blank");
+      } catch (err) {
+        toast.error("Download failed.");
+      }
     }
   };
 
@@ -206,6 +226,61 @@ export function DocumentsPage() {
     }
   };
 
+  const handleOpenShare = async (d: (typeof data)[number]) => {
+    const name = d.name;
+    const mime = d.mime || "";
+    const isSpreadsheet =
+      mime === "text/csv" ||
+      mime === "application/vnd.ms-excel" ||
+      mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+      /\.(xlsx|xls|csv)$/i.test(name);
+
+    setShareDoc(d);
+    setShareSheetNames([]);
+    setSelectedSheets({});
+
+    if (!isSpreadsheet || !d.storage_path) {
+      setIsLoadingShareSheets(false);
+      return;
+    }
+
+    setIsLoadingShareSheets(true);
+
+    try {
+      const publicUrl = supabase.storage.from("documents").getPublicUrl(d.storage_path).data.publicUrl;
+      const res = await fetch(publicUrl);
+      if (!res.ok) throw new Error("Failed to download spreadsheet file");
+
+      const ext = name.split(".").pop()?.toLowerCase() || "";
+      if (ext === "csv") {
+        setShareSheetNames(["CSV Data"]);
+        setSelectedSheets({ 0: true });
+      } else {
+        const buffer = await res.arrayBuffer();
+        const workbook = XLSX.read(buffer, { bookSheets: true });
+        setShareSheetNames(workbook.SheetNames);
+        const initialSelected: Record<number, boolean> = {};
+        workbook.SheetNames.forEach((_, idx) => {
+          initialSelected[idx] = true;
+        });
+        setSelectedSheets(initialSelected);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load sheet list.");
+      setShareDoc(null);
+    } finally {
+      setIsLoadingShareSheets(false);
+    }
+  };
+
+  const isShareDocSpreadsheet = shareDoc && (
+    shareDoc.mime === "text/csv" ||
+    shareDoc.mime === "application/vnd.ms-excel" ||
+    shareDoc.mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    /\.(xlsx|xls|csv)$/i.test(shareDoc.name)
+  );
+
   return (
     <AppShell>
       <PageHeader
@@ -270,18 +345,14 @@ export function DocumentsPage() {
                   {d.storage_path && (
                     <>
                       <button
-                        onClick={() => handleDownloadFile(d.storage_path!, d.name)}
+                        onClick={() => setDownloadDoc(d)}
                         className="h-7 w-7 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink-muted hover:text-ink transition-colors cursor-pointer"
                         title="Download"
                       >
                         <Download className="h-3.5 w-3.5" strokeWidth={1.75} />
                       </button>
                       <button
-                        onClick={() => {
-                          const shareUrl = `${window.location.origin}/share/document/${d.id}`;
-                          void navigator.clipboard.writeText(shareUrl);
-                          toast.success(t("documents.shareCopied", "Share link copied to clipboard!"));
-                        }}
+                        onClick={() => handleOpenShare(d)}
                         className="h-7 w-7 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink-muted hover:text-ink transition-colors cursor-pointer"
                         title={t("documents.share", "Share")}
                       >
@@ -520,7 +591,7 @@ export function DocumentsPage() {
                   <RotateCcw className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => handleDownloadFile(previewStoragePath, previewName)}
+                  onClick={() => setDownloadDoc({ storage_path: previewStoragePath, name: previewName } as any)}
                   className="h-8 px-3 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary-active cursor-pointer"
                 >
                   <Download className="h-3.5 w-3.5" />
@@ -544,6 +615,151 @@ export function DocumentsPage() {
                 Loading preview...
               </div>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Document Modal */}
+      <Dialog open={!!shareDoc} onOpenChange={(open) => { if (!open) setShareDoc(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Share2 className="h-5 w-5 text-primary" />
+              {t("documents.shareModal.title", "Share Document")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="text-sm text-ink-secondary">
+              <span className="font-semibold text-ink break-all block mb-1">{shareDoc?.name}</span>
+              {isShareDocSpreadsheet 
+                ? t("documents.shareModal.desc", "Choose which sheets you want to share with the public:")
+                : t("documents.shareModal.descGeneric", "Generate a public share link to allow anyone to view this file:")}
+            </div>
+
+            {isShareDocSpreadsheet && (
+              isLoadingShareSheets ? (
+                <div className="h-28 flex flex-col items-center justify-center gap-2 border border-hairline rounded-lg bg-surface-muted/30">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <span className="text-xs text-ink-muted">{t("documents.shareModal.loadingSheets", "Loading sheet list...")}</span>
+                </div>
+              ) : (
+                <div className="max-h-48 overflow-y-auto border border-hairline rounded-lg divide-y divide-hairline bg-surface custom-scrollbar">
+                  {shareSheetNames.map((name, idx) => (
+                    <label
+                      key={idx}
+                      className="flex items-center gap-2.5 px-3 py-2 hover:bg-surface-muted cursor-pointer transition-colors text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={!!selectedSheets[idx]}
+                        onChange={(e) => {
+                          setSelectedSheets((prev) => ({
+                            ...prev,
+                            [idx]: e.target.checked,
+                          }));
+                        }}
+                        className="h-4 w-4 rounded border-hairline text-primary focus:ring-primary focus:ring-1 cursor-pointer"
+                      />
+                      <span className="text-ink font-medium select-none truncate">{name}</span>
+                    </label>
+                  ))}
+                </div>
+              )
+            )}
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-hairline">
+              <button
+                type="button"
+                onClick={() => setShareDoc(null)}
+                className="h-9 px-3.5 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
+              >
+                {t("common.cancel", "Cancel")}
+              </button>
+              <button
+                type="button"
+                disabled={isLoadingShareSheets || (isShareDocSpreadsheet && !Object.values(selectedSheets).some(Boolean))}
+                onClick={() => {
+                  if (!shareDoc) return;
+                  let shareUrl = `${window.location.origin}/share/document/${shareDoc.id}`;
+                  
+                  const authUser = auth?.user;
+                  let hasQuery = false;
+                  if (authUser) {
+                    let avatar = authUser.avatar_url || "";
+                    const marker = "/public/avatars/";
+                    const mIdx = avatar.indexOf(marker);
+                    if (mIdx !== -1) {
+                      avatar = avatar.substring(mIdx + marker.length);
+                    }
+                    if (avatar.endsWith("_cropped.jpg")) {
+                      avatar = avatar.replace("_cropped.jpg", "");
+                    }
+                    const rawInfo = `${authUser.name.trim()}|${avatar}`;
+                    const uToken = btoa(unescape(encodeURIComponent(rawInfo)))
+                      .replace(/=/g, "")
+                      .replace(/\+/g, "-")
+                      .replace(/\//g, "_");
+                    shareUrl += `?u=${uToken}`;
+                    hasQuery = true;
+                  }
+
+                  if (isShareDocSpreadsheet) {
+                    const selectedIndices = Object.entries(selectedSheets)
+                      .filter(([_, checked]) => checked)
+                      .map(([idx]) => idx)
+                      .join(",");
+                    const token = btoa(selectedIndices).replace(/=/g, "");
+                    shareUrl += `${hasQuery ? "&" : "?"}v=${token}`;
+                  }
+
+                  void navigator.clipboard.writeText(shareUrl);
+                  toast.success(t("documents.shareCopied", "Share link copied to clipboard!"));
+                  setShareDoc(null);
+                }}
+                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-active transition-colors cursor-pointer disabled:opacity-50 disabled:hover:bg-primary"
+              >
+                {t("documents.shareModal.copyLink", "Copy Link")}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Download Confirmation Dialog */}
+      <Dialog open={downloadDoc !== null} onOpenChange={(open) => !open && setDownloadDoc(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Download className="h-5 w-5 text-primary" />
+              {t("documents.downloadModal.title", "Download Document")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="text-sm text-ink-secondary">
+              {t("documents.downloadModal.desc", "Are you sure you want to download this file?")}
+              <span className="font-semibold text-ink break-all block mt-1">{downloadDoc?.name}</span>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-hairline">
+              <button
+                type="button"
+                onClick={() => setDownloadDoc(null)}
+                className="h-9 px-3.5 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
+              >
+                {t("common.cancel", "Cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (downloadDoc?.storage_path) {
+                    handleDownloadFile(downloadDoc.storage_path, downloadDoc.name);
+                  }
+                  setDownloadDoc(null);
+                }}
+                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-active transition-colors cursor-pointer"
+              >
+                {t("documents.viewer.download", "Download")}
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

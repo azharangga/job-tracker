@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Sparkles, Briefcase, Calendar, Award, TrendingUp, Building2, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -15,6 +15,10 @@ export function LoginPage() {
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    document.title = "Login | Job Tracker";
+  }, []);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();

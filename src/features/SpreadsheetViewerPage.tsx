@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/layout/AppShell";
 import { getDocument } from "@/services";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Download, FileSpreadsheet, Loader2, Search, ArrowUpDown, ChevronLeft, ChevronRight, Copy, Filter, X, Check } from "lucide-react";
+import { ArrowLeft, Download, FileSpreadsheet, Loader2, Search, ArrowUpDown, ChevronLeft, ChevronRight, Copy, Filter, X, Check, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { fileSize, formatDate } from "@/lib/format";
 import Link from "next/link";
@@ -12,6 +12,12 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import * as XLSX from "xlsx";
 import { toast } from "@/lib/toast";
 import { useTranslation } from "react-i18next";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface SheetData {
   name: string;
@@ -90,7 +96,7 @@ function parseCSV(text: string): string[][] {
   return result;
 }
 
-export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; publicMode?: boolean }) {
+export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }: { id: string; publicMode?: boolean; allowedSheets?: number[] }) {
   const router = useRouter();
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -106,6 +112,7 @@ export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; 
   const [parseError, setParseError] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isParsingWorkbook, setIsParsingWorkbook] = useState(false);
+  const [downloadConfirmOpen, setDownloadConfirmOpen] = useState(false);
 
   // Grouped table states for instant batch updates and single-frame renders
   const [tableState, setTableState] = useState<TableState>(INITIAL_TABLE_STATE);
@@ -183,7 +190,7 @@ export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; 
           setIsParsingWorkbook(true);
           await new Promise((resolve) => setTimeout(resolve, 30));
           const workbook = XLSX.read(buffer, { type: "array", cellHTML: false, cellFormula: false, cellStyles: false });
-          const parsedSheets: SheetData[] = workbook.SheetNames.map((name) => {
+          let parsedSheets: SheetData[] = workbook.SheetNames.map((name) => {
             const worksheet = workbook.Sheets[name];
             const rows = XLSX.utils.sheet_to_json<string[]>(worksheet, {
               header: 1,
@@ -191,6 +198,9 @@ export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; 
             }) as string[][];
             return { name, rows };
           });
+          if (allowedSheets && allowedSheets.length > 0) {
+            parsedSheets = parsedSheets.filter((_, idx) => allowedSheets.includes(idx));
+          }
           setSheets(parsedSheets);
           return;
         }
@@ -229,7 +239,7 @@ export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; 
           setSheets([{ name: "CSV Data", rows: parsed }]);
         } else {
           const workbook = XLSX.read(allChunks, { type: "array", cellHTML: false, cellFormula: false, cellStyles: false });
-          const parsedSheets: SheetData[] = workbook.SheetNames.map((name) => {
+          let parsedSheets: SheetData[] = workbook.SheetNames.map((name) => {
             const worksheet = workbook.Sheets[name];
             const rows = XLSX.utils.sheet_to_json<string[]>(worksheet, {
               header: 1,
@@ -237,6 +247,9 @@ export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; 
             }) as string[][];
             return { name, rows };
           });
+          if (allowedSheets && allowedSheets.length > 0) {
+            parsedSheets = parsedSheets.filter((_, idx) => allowedSheets.includes(idx));
+          }
           setSheets(parsedSheets);
         }
       } catch (err) {
@@ -541,6 +554,15 @@ export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; 
               <span>{t("documents.viewer.size")}: {fileSize(doc.size)}</span>
               <span>•</span>
               <span>{t("documents.viewer.uploaded")}: {formatDate(doc.created_at)}</span>
+              {publicMode && (
+                <>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium">
+                    <Globe className="h-3.5 w-3.5" />
+                    {t("documents.viewer.publicShared", "Public Shared")}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -557,16 +579,7 @@ export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; 
             )}
             {doc.storage_path && (
               <button
-                onClick={() => {
-                  const url = supabase.storage.from("documents").getPublicUrl(doc.storage_path!).data.publicUrl;
-                  const link = document.createElement("a");
-                  link.href = url;
-                  link.setAttribute("download", doc.name);
-                  link.style.display = "none";
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
+                onClick={() => setDownloadConfirmOpen(true)}
                 className="inline-flex items-center justify-center gap-1.5 h-9 w-9 md:w-auto md:px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors cursor-pointer"
                 title={t("documents.viewer.download")}
               >
@@ -905,6 +918,59 @@ export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; 
           </div>
         </div>
       </div>
+      <Dialog open={downloadConfirmOpen} onOpenChange={setDownloadConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Download className="h-5 w-5 text-primary" />
+              {t("documents.downloadModal.title", "Download Document")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="text-sm text-ink-secondary">
+              {t("documents.downloadModal.desc", "Are you sure you want to download this file?")}
+              <span className="font-semibold text-ink break-all block mt-1">{doc.name}</span>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-hairline">
+              <button
+                type="button"
+                onClick={() => setDownloadConfirmOpen(false)}
+                className="h-9 px-3.5 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
+              >
+                {t("common.cancel", "Cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const url = supabase.storage.from("documents").getPublicUrl(doc.storage_path!).data.publicUrl;
+                    const res = await fetch(url);
+                    const blob = await res.blob();
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = blobUrl;
+                    link.setAttribute("download", doc.name);
+                    link.style.display = "none";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(blobUrl);
+                  } catch (e) {
+                    console.error(e);
+                    // Fallback
+                    const url = supabase.storage.from("documents").getPublicUrl(doc.storage_path!).data.publicUrl;
+                    window.open(url, "_blank");
+                  }
+                  setDownloadConfirmOpen(false);
+                }}
+                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-active transition-colors cursor-pointer"
+              >
+                {t("documents.viewer.download", "Download")}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

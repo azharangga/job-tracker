@@ -6,21 +6,30 @@ import { PDFViewerPage } from "@/features/PDFViewerPage";
 import { SpreadsheetViewerPage } from "@/features/SpreadsheetViewerPage";
 import { FileViewerPage } from "@/features/FileViewerPage";
 import { Loader2 } from "lucide-react";
-import { use } from "react";
+import { use, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+import { useSearchParams } from "next/navigation";
+
 export default function ShareDocumentPage({ params }: PageProps) {
   const { id } = use(params);
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
 
   const { data: doc, isLoading, error } = useQuery({
     queryKey: ["document", id],
     queryFn: () => getDocument(id),
   });
+
+  useEffect(() => {
+    if (doc?.name) {
+      document.title = `${doc.name} - Shared Document`;
+    }
+  }, [doc]);
 
   if (isLoading) {
     return (
@@ -59,7 +68,25 @@ export default function ShareDocumentPage({ params }: PageProps) {
   }
 
   if (isSpreadsheet) {
-    return <SpreadsheetViewerPage id={id} publicMode={true} />;
+    const vParam = searchParams ? searchParams.get("v") : null;
+    let allowedSheets: number[] | undefined = undefined;
+    if (vParam) {
+      try {
+        let base64 = vParam;
+        while (base64.length % 4) {
+          base64 += "=";
+        }
+        const decoded = atob(base64);
+        allowedSheets = decoded
+          .split(",")
+          .filter((s) => s.trim() !== "")
+          .map(Number)
+          .filter((n) => !isNaN(n));
+      } catch (err) {
+        console.error("Failed to decode sheets token:", err);
+      }
+    }
+    return <SpreadsheetViewerPage id={id} publicMode={true} allowedSheets={allowedSheets} />;
   }
 
   return <FileViewerPage id={id} publicMode={true} />;

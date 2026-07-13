@@ -4,15 +4,23 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/layout/AppShell";
 import { getDocument } from "@/services";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Download, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, FileText, Loader2, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { fileSize, formatDate } from "@/lib/format";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function PDFViewerPage({ id, publicMode = false }: { id: string; publicMode?: boolean }) {
   const router = useRouter();
   const { t } = useTranslation();
+  const [downloadConfirmOpen, setDownloadConfirmOpen] = useState(false);
   const { data: doc, isLoading, error } = useQuery({
     queryKey: ["document", id],
     queryFn: () => getDocument(id),
@@ -71,6 +79,15 @@ export function PDFViewerPage({ id, publicMode = false }: { id: string; publicMo
               <span>{t("documents.viewer.size")}: {fileSize(doc.size)}</span>
               <span>•</span>
               <span>{t("documents.viewer.uploaded")}: {formatDate(doc.created_at)}</span>
+              {publicMode && (
+                <>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium">
+                    <Globe className="h-3.5 w-3.5" />
+                    {t("documents.viewer.publicShared", "Public Shared")}
+                  </span>
+                </>
+              )}
               {doc.description && (
                 <>
                   <span>•</span>
@@ -93,16 +110,7 @@ export function PDFViewerPage({ id, publicMode = false }: { id: string; publicMo
             )}
             {doc.storage_path && (
               <button
-                onClick={() => {
-                  const url = supabase.storage.from("documents").getPublicUrl(doc.storage_path!).data.publicUrl;
-                  const link = document.createElement("a");
-                  link.href = url;
-                  link.setAttribute("download", doc.name);
-                  link.style.display = "none";
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
+                onClick={() => setDownloadConfirmOpen(true)}
                 className="inline-flex items-center justify-center gap-1.5 h-9 w-9 md:w-auto md:px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors cursor-pointer"
                 title={t("documents.viewer.download")}
               >
@@ -128,6 +136,59 @@ export function PDFViewerPage({ id, publicMode = false }: { id: string; publicMo
           )}
         </div>
       </div>
+      <Dialog open={downloadConfirmOpen} onOpenChange={setDownloadConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Download className="h-5 w-5 text-primary" />
+              {t("documents.downloadModal.title", "Download Document")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="text-sm text-ink-secondary">
+              {t("documents.downloadModal.desc", "Are you sure you want to download this file?")}
+              <span className="font-semibold text-ink break-all block mt-1">{doc.name}</span>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-hairline">
+              <button
+                type="button"
+                onClick={() => setDownloadConfirmOpen(false)}
+                className="h-9 px-3.5 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
+              >
+                {t("common.cancel", "Cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const url = supabase.storage.from("documents").getPublicUrl(doc.storage_path!).data.publicUrl;
+                    const res = await fetch(url);
+                    const blob = await res.blob();
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = blobUrl;
+                    link.setAttribute("download", doc.name);
+                    link.style.display = "none";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(blobUrl);
+                  } catch (e) {
+                    console.error(e);
+                    // Fallback
+                    const url = supabase.storage.from("documents").getPublicUrl(doc.storage_path!).data.publicUrl;
+                    window.open(url, "_blank");
+                  }
+                  setDownloadConfirmOpen(false);
+                }}
+                className="h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-active transition-colors cursor-pointer"
+              >
+                {t("documents.viewer.download", "Download")}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

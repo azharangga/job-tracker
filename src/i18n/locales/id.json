@@ -303,7 +303,13 @@
       "sortAsc": "Urutkan A-Z",
       "sortDesc": "Urutkan Z-A",
       "noRecords": "Data tidak ditemukan",
-      "descriptionLabel": "Deskripsi"
+      "descriptionLabel": "Deskripsi",
+      "publicShared": "Dibagikan Publik",
+      "publicSharedLink": "Link Dibagikan Publik"
+    },
+    "downloadModal": {
+      "title": "Unduh Dokumen",
+      "desc": "Apakah Anda yakin ingin mengunduh file ini?"
     }
   },
   "calendar": {

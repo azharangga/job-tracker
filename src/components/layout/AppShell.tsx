@@ -7,6 +7,10 @@ import { RotateCcw, Sun, Moon } from "lucide-react";
 import { Logo } from "../common/Logo";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AppShell({ children, publicMode = false }: { children: ReactNode; publicMode?: boolean }) {
   const { t } = useTranslation();
@@ -14,6 +18,67 @@ export function AppShell({ children, publicMode = false }: { children: ReactNode
   const isDemoMode = auth?.isDemoMode ?? false;
   const resetDemoData = auth?.resetDemoData ?? (() => {});
   const { theme, toggle } = useTheme();
+  const searchParams = useSearchParams();
+
+  const { data: dbOwner } = useQuery({
+    queryKey: ["workspace-owner-db"],
+    queryFn: async () => {
+      if (isDemoMode) return null;
+      try {
+        const { data } = await supabase.from("users").select("name, avatar_url").limit(1).maybeSingle();
+        return data;
+      } catch {
+        return null;
+      }
+    },
+    enabled: publicMode,
+  });
+
+  const owner = useMemo(() => {
+    let uParam: string | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        uParam = params.get("u");
+      } catch (e) {
+        console.error("Failed to parse window.location.search:", e);
+      }
+    }
+    if (!uParam && searchParams) {
+      uParam = searchParams.get("u");
+    }
+
+    if (uParam) {
+      try {
+        const normalized = uParam.replace(/-/g, "+").replace(/_/g, "/");
+        let base64 = normalized;
+        while (base64.length % 4) {
+          base64 += "=";
+        }
+        const decoded = decodeURIComponent(escape(atob(base64)));
+        const parts = decoded.split("|");
+        const name = parts[0] || "Workspace Owner";
+        let avatar_url = parts[1] || null;
+        if (avatar_url && !avatar_url.startsWith("http")) {
+          const filename = /^\d+$/.test(avatar_url) ? `${avatar_url}_cropped.jpg` : avatar_url;
+          avatar_url = supabase.storage.from("avatars").getPublicUrl(filename).data.publicUrl;
+        }
+        return { name, avatar_url };
+      } catch (err) {
+        console.error("Failed to decode owner token:", err);
+      }
+    }
+    if (dbOwner) {
+      return {
+        name: dbOwner.name || "Workspace Owner",
+        avatar_url: dbOwner.avatar_url || null,
+      };
+    }
+    if (isDemoMode) {
+      return { name: "Demo User", avatar_url: null };
+    }
+    return { name: "Workspace Owner", avatar_url: null };
+  }, [searchParams, isDemoMode, dbOwner]);
 
   return (
     <div className="flex min-h-screen w-full bg-background flex-col">
@@ -38,7 +103,7 @@ export function AppShell({ children, publicMode = false }: { children: ReactNode
           {!publicMode ? (
             <Topbar />
           ) : (
-            <header className="border-b border-hairline bg-surface h-14 shrink-0 flex items-center justify-between px-6 sm:px-8">
+            <header className="sticky top-0 z-50 border-b border-hairline bg-surface/90 backdrop-blur h-14 shrink-0 flex items-center justify-between px-6 sm:px-8">
               <div className="flex items-center gap-2.5 min-w-0">
                 <Logo className="h-7 w-7 shrink-0" />
                 <div className="flex flex-col min-w-0 text-left">
@@ -55,7 +120,7 @@ export function AppShell({ children, publicMode = false }: { children: ReactNode
                 <button
                   onClick={toggle}
                   aria-label={t("topbar.toggleTheme")}
-                  className="h-8 w-8 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted transition-colors text-ink-muted hover:text-ink"
+                  className="h-8 w-8 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted transition-colors text-ink-muted hover:text-ink shrink-0"
                 >
                   {theme === "dark" ? (
                     <Sun className="h-4 w-4" strokeWidth={1.75} />
@@ -63,6 +128,18 @@ export function AppShell({ children, publicMode = false }: { children: ReactNode
                     <Moon className="h-4 w-4" strokeWidth={1.75} />
                   )}
                 </button>
+                {owner && (
+                  <div 
+                    className="h-8 w-8 rounded-full border border-hairline overflow-hidden flex items-center justify-center bg-primary/10 text-primary font-bold text-xs shrink-0 uppercase select-none cursor-help ml-1"
+                    title={owner.name}
+                  >
+                    {owner.avatar_url ? (
+                      <img src={owner.avatar_url} alt={owner.name} className="h-full w-full object-cover animate-fade-in" />
+                    ) : (
+                      <span>{owner.name[0]}</span>
+                    )}
+                  </div>
+                )}
               </div>
             </header>
           )}

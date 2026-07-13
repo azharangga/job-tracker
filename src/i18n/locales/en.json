@@ -303,7 +303,13 @@
       "sortAsc": "Sort Ascending",
       "sortDesc": "Sort Descending",
       "noRecords": "No matching records found",
-      "descriptionLabel": "Description"
+      "descriptionLabel": "Description",
+      "publicShared": "Public Shared",
+      "publicSharedLink": "Public Shared Link"
+    },
+    "downloadModal": {
+      "title": "Download Document",
+      "desc": "Are you sure you want to download this file?"
     }
   },
   "calendar": {
