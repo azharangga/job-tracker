@@ -272,6 +272,8 @@
     },
     "created": "Document uploaded",
     "deleted": "Document deleted",
+    "share": "Share",
+    "shareCopied": "Share link copied to clipboard!",
     "edit": "Edit Document",
     "deleteConfirm": "Are you sure you want to delete this document? This action is permanent.",
     "form": {

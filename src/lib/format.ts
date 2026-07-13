@@ -18,10 +18,17 @@ export function formatCurrency(
   return fmt((min ?? max) as number);
 }
 
-export function formatDate(iso: string | null | undefined, pattern = "MMM d, yyyy") {
+import i18n from "@/i18n";
+import { id as localeID } from "date-fns/locale";
+
+export function formatDate(iso: string | null | undefined, pattern?: string) {
   if (!iso) return "-";
   try {
-    return format(parseISO(iso), pattern);
+    const isIndonesian = i18n.language === "id";
+    const defaultPattern = isIndonesian ? "d MMM yyyy" : "MMM d, yyyy";
+    const finalPattern = pattern ?? defaultPattern;
+    const options = isIndonesian ? { locale: localeID } : undefined;
+    return format(parseISO(iso), finalPattern, options);
   } catch {
     return "-";
   }
@@ -30,7 +37,9 @@ export function formatDate(iso: string | null | undefined, pattern = "MMM d, yyy
 export function formatRelative(iso: string | null | undefined) {
   if (!iso) return "-";
   try {
-    return formatDistanceToNow(parseISO(iso), { addSuffix: true });
+    const isIndonesian = i18n.language === "id";
+    const options = isIndonesian ? { locale: localeID, addSuffix: true } : { addSuffix: true };
+    return formatDistanceToNow(parseISO(iso), options);
   } catch {
     return "-";
   }

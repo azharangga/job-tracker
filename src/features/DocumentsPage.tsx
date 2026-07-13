@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Upload, Trash2, Download, Pencil, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { FileText, Upload, Trash2, Download, Pencil, ZoomIn, ZoomOut, RotateCcw, Share2 } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { StickerBadge } from "@/components/common/StickerBadge";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -59,6 +59,7 @@ export function DocumentsPage() {
   const [editVersion, setEditVersion] = useState(1);
   const [editDescription, setEditDescription] = useState("");
   const [editFile, setEditFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   // Preview States
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -127,8 +128,9 @@ export function DocumentsPage() {
       toast.error("Please select a file to upload.");
       return;
     }
+    setUploadProgress(0);
     try {
-      const storagePath = await uploadDocumentFile(selectedFile);
+      const storagePath = await uploadDocumentFile(selectedFile, (p) => setUploadProgress(p));
       await createDocument({
         name: selectedFile.name,
         size: selectedFile.size,
@@ -146,11 +148,14 @@ export function DocumentsPage() {
       void qc.invalidateQueries({ queryKey: ["documents"] });
     } catch (e) {
       toast.error((e as Error).message);
+    } finally {
+      setUploadProgress(null);
     }
   };
 
   const handleUpdate = async () => {
     if (!editDoc) return;
+    setUploadProgress(0);
     try {
       let patch: any = {
         name: editName,
@@ -160,7 +165,7 @@ export function DocumentsPage() {
       };
 
       if (editFile) {
-        const storagePath = await uploadDocumentFile(editFile);
+        const storagePath = await uploadDocumentFile(editFile, (p) => setUploadProgress(p));
         if (editDoc.storage_path) {
           try {
             await supabase.storage.from("documents").remove([editDoc.storage_path]);
@@ -180,6 +185,8 @@ export function DocumentsPage() {
       void qc.invalidateQueries({ queryKey: ["documents"] });
     } catch (e) {
       toast.error((e as Error).message);
+    } finally {
+      setUploadProgress(null);
     }
   };
 
@@ -269,6 +276,17 @@ export function DocumentsPage() {
                       >
                         <Download className="h-3.5 w-3.5" strokeWidth={1.75} />
                       </button>
+                      <button
+                        onClick={() => {
+                          const shareUrl = `${window.location.origin}/share/document/${d.id}`;
+                          void navigator.clipboard.writeText(shareUrl);
+                          toast.success(t("documents.shareCopied", "Share link copied to clipboard!"));
+                        }}
+                        className="h-7 w-7 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink-muted hover:text-ink transition-colors cursor-pointer"
+                        title={t("documents.share", "Share")}
+                      >
+                        <Share2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </button>
                     </>
                   )}
                   <button
@@ -347,6 +365,21 @@ export function DocumentsPage() {
               className="w-full h-20 rounded-md border border-hairline bg-surface p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
+
+          {uploadProgress !== null && (
+            <div className="w-full space-y-1.5 pt-2 border-t border-hairline">
+              <div className="flex justify-between text-xs font-semibold text-ink-muted">
+                <span>Mengunggah file...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="w-full bg-surface-muted border border-hairline rounded-full h-2 overflow-hidden p-[1px]">
+                <div 
+                  className="bg-primary h-full rounded-full transition-all duration-200" 
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </FormDialog>
 
@@ -428,6 +461,21 @@ export function DocumentsPage() {
               className="w-full h-20 rounded-md border border-hairline bg-surface p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
+
+          {uploadProgress !== null && (
+            <div className="w-full space-y-1.5 pt-2 border-t border-hairline">
+              <div className="flex justify-between text-xs font-semibold text-ink-muted">
+                <span>Mengunggah file...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="w-full bg-surface-muted border border-hairline rounded-full h-2 overflow-hidden p-[1px]">
+                <div 
+                  className="bg-primary h-full rounded-full transition-all duration-200" 
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </FormDialog>
 

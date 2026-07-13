@@ -144,13 +144,49 @@ export async function listContacts(): Promise<Contact[]> {
 }
 
 // ----------------------- Documents -----------------------
+// Helper functions to map custom DocumentKind categories that are not supported in Postgres enum to "other" and vice versa
+function mapDbDocument(doc: any): DocumentRow {
+  if (!doc) return doc;
+  let kind = doc.kind;
+  if (kind === "other") {
+    const ext = doc.name.split(".").pop()?.toLowerCase() || "";
+    const mime = doc.mime || "";
+    if (ext === "pdf" || mime === "application/pdf") {
+      kind = "pdf";
+    } else if (["xlsx", "xls", "csv"].includes(ext) || ["text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"].includes(mime)) {
+      kind = "spreadsheet";
+    } else if (["docx", "doc", "odt"].includes(ext) || ["application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.oasis.opendocument.text"].includes(mime)) {
+      kind = "word";
+    } else if (["pptx", "ppt", "odp"].includes(ext) || ["application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.oasis.opendocument.presentation"].includes(mime)) {
+      kind = "powerpoint";
+    }
+  }
+  return {
+    ...doc,
+    kind,
+  };
+}
+
+function sanitizeDbDocument(patch: Partial<DocumentRow>): any {
+  if (!patch) return patch;
+  let kind = patch.kind;
+  if (kind === "pdf" || kind === "spreadsheet" || kind === "word" || kind === "powerpoint") {
+    kind = "other";
+  }
+  return {
+    ...patch,
+    kind,
+  };
+}
+
 export async function listDocuments(): Promise<DocumentRow[]> {
   const { data, error } = await supabase
     .from("documents")
     .select("*")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data as unknown as DocumentRow[]) ?? [];
+  const rows = (data as unknown as DocumentRow[]) ?? [];
+  return rows.map(mapDbDocument);
 }
 
 // ----------------------- Tasks -----------------------
@@ -302,21 +338,51 @@ export async function deleteNote(id: string) {
 }
 
 // Documents
-export async function uploadDocumentFile(file: File): Promise<string> {
+export async function uploadDocumentFile(file: File, onProgress?: (percent: number) => void): Promise<string> {
   const path = `${Date.now()}_${file.name}`;
-  const { data, error } = await supabase.storage.from("documents").upload(path, file);
-  if (error) throw error;
-  return data.path;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "";
+  
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token || supabaseKey;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${supabaseUrl}/storage/v1/object/documents/${path}`);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.setRequestHeader("apikey", supabaseKey);
+
+    if (onProgress) {
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          onProgress(percent);
+        }
+      });
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(path);
+      } else {
+        reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Network error during file upload"));
+    xhr.send(file);
+  });
 }
 
 export async function createDocument(patch: Partial<DocumentRow>) {
+  const sanitized = sanitizeDbDocument(patch);
   const { data, error } = await supabase
     .from("documents")
-    .insert({ name: "Untitled", kind: "other", size: 0, version: 1, ...(patch as Record<string, unknown>) } as never)
+    .insert({ name: "Untitled", kind: "other", size: 0, version: 1, ...sanitized } as never)
     .select("*")
     .single();
   if (error) throw error;
-  return data as unknown as DocumentRow;
+  return mapDbDocument(data) as unknown as DocumentRow;
 }
 
 export async function deleteDocument(id: string) {
@@ -331,18 +397,19 @@ export async function getDocument(id: string): Promise<DocumentRow | null> {
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
-  return data as unknown as DocumentRow | null;
+  return mapDbDocument(data) as unknown as DocumentRow | null;
 }
 
 export async function updateDocument(id: string, patch: Partial<DocumentRow>) {
+  const sanitized = sanitizeDbDocument(patch);
   const { data, error } = await supabase
     .from("documents")
-    .update(patch as never)
+    .update(sanitized as never)
     .eq("id", id)
     .select("*")
     .single();
   if (error) throw error;
-  return data as unknown as DocumentRow;
+  return mapDbDocument(data) as unknown as DocumentRow;
 }
 
 

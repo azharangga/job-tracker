@@ -402,8 +402,13 @@ export async function deleteNote(id: string) {
 }
 
 // Documents
-export async function uploadDocumentFile(file: File): Promise<string> {
-  // Simulating path for uploaded document locally
+export async function uploadDocumentFile(file: File, onProgress?: (percent: number) => void): Promise<string> {
+  // Simulating path for uploaded document locally with progressive steps
+  const totalSteps = 10;
+  for (let i = 1; i <= totalSteps; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    if (onProgress) onProgress(Math.round((i / totalSteps) * 100));
+  }
   return `demo-doc-${Date.now()}-${file.name}`;
 }
 

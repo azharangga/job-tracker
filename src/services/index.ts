@@ -140,8 +140,8 @@ export function deleteNote(id: string): Promise<void> {
   return isDemo() ? demoRepo.deleteNote(id) : liveRepo.deleteNote(id);
 }
 
-export function uploadDocumentFile(file: File): Promise<string> {
-  return isDemo() ? demoRepo.uploadDocumentFile(file) : liveRepo.uploadDocumentFile(file);
+export function uploadDocumentFile(file: File, onProgress?: (percent: number) => void): Promise<string> {
+  return isDemo() ? demoRepo.uploadDocumentFile(file, onProgress) : liveRepo.uploadDocumentFile(file, onProgress);
 }
 
 export function createDocument(patch: Partial<DocumentRow>): Promise<DocumentRow> {

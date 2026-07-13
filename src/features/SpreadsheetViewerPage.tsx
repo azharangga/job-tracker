@@ -90,7 +90,7 @@ function parseCSV(text: string): string[][] {
   return result;
 }
 
-export function SpreadsheetViewerPage({ id }: { id: string }) {
+export function SpreadsheetViewerPage({ id, publicMode = false }: { id: string; publicMode?: boolean }) {
   const router = useRouter();
   const { t } = useTranslation();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -112,7 +112,7 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
   
   // Separate responsive input bindings
   const [dropdownSearchInput, setDropdownSearchInput] = useState("");
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(100);
 
   const publicUrl = doc?.storage_path
     ? supabase.storage.from("documents").getPublicUrl(doc.storage_path).data.publicUrl
@@ -182,7 +182,7 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
           if (!active) return;
           setIsParsingWorkbook(true);
           await new Promise((resolve) => setTimeout(resolve, 30));
-          const workbook = XLSX.read(buffer, { type: "array" });
+          const workbook = XLSX.read(buffer, { type: "array", cellHTML: false, cellFormula: false, cellStyles: false });
           const parsedSheets: SheetData[] = workbook.SheetNames.map((name) => {
             const worksheet = workbook.Sheets[name];
             const rows = XLSX.utils.sheet_to_json<string[]>(worksheet, {
@@ -228,7 +228,7 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
           const parsed = parseCSV(text);
           setSheets([{ name: "CSV Data", rows: parsed }]);
         } else {
-          const workbook = XLSX.read(allChunks, { type: "array" });
+          const workbook = XLSX.read(allChunks, { type: "array", cellHTML: false, cellFormula: false, cellStyles: false });
           const parsedSheets: SheetData[] = workbook.SheetNames.map((name) => {
             const worksheet = workbook.Sheets[name];
             const rows = XLSX.utils.sheet_to_json<string[]>(worksheet, {
@@ -494,20 +494,18 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
 
   if (isLoadingAll) {
     return (
-      <AppShell>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-          <Loader2 className="h-9 w-9 animate-spin text-primary" />
-          <p className="text-sm text-ink-muted">
-            {t("documents.viewer.loading")}
-          </p>
+      <div className="min-h-screen grid place-items-center bg-background">
+        <div className="flex items-center gap-2 text-sm text-ink-muted">
+          <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          {t("documents.viewer.loading")}
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   if (docError || parseError || !doc) {
     return (
-      <AppShell>
+      <AppShell publicMode={publicMode}>
         <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-6">
           <div className="h-12 w-12 rounded-full bg-destructive/10 text-destructive grid place-items-center mb-4">
             <FileSpreadsheet className="h-6 w-6" />
@@ -516,27 +514,28 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
           <p className="text-sm text-ink-muted mt-1 max-w-sm">
             {parseError || t("documents.viewer.notFoundDesc")}
           </p>
-          <button
-            onClick={() => router.push("/documents")}
-            className="mt-4 inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-active transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t("documents.viewer.back")}
-          </button>
+          {!publicMode && (
+            <button
+              onClick={() => router.push("/documents")}
+              className="mt-4 inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-active transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t("documents.viewer.back")}
+            </button>
+          )}
         </div>
       </AppShell>
     );
   }
 
   return (
-    <AppShell>
+    <AppShell publicMode={publicMode}>
       <div className="flex flex-col h-[calc(100vh-6rem)]">
-        {/* Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pb-3 border-b border-hairline shrink-0">
-          <div>
-            <h1 className="text-xl font-bold text-ink mt-1.5 flex items-center gap-2">
-              <FileSpreadsheet className="h-5 w-5 text-emerald-600 shrink-0" />
-              <span className="truncate max-w-[300px] md:max-w-[500px]">{doc.name}</span>
+        <div className="flex justify-between items-start gap-4 pb-3 border-b border-hairline shrink-0">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-xl font-bold text-ink mt-1.5 flex items-start gap-2 break-words">
+              <FileSpreadsheet className="h-5 w-5 text-emerald-600 shrink-0 mt-1" />
+              <span className="break-all">{doc.name}</span>
             </h1>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted mt-1">
               <span>{t("documents.viewer.size")}: {fileSize(doc.size)}</span>
@@ -545,14 +544,17 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end">
-            <button
-              onClick={() => router.push("/documents")}
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t("documents.viewer.back")}
-            </button>
+          <div className="flex items-center gap-2 shrink-0 mt-1">
+            {!publicMode && (
+              <button
+                onClick={() => router.push("/documents")}
+                className="inline-flex items-center justify-center gap-1.5 h-9 w-9 md:w-auto md:px-3.5 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
+                title={t("documents.viewer.back")}
+              >
+                <ArrowLeft className="h-4 w-4 shrink-0" />
+                <span className="hidden md:inline">{t("documents.viewer.back")}</span>
+              </button>
+            )}
             {doc.storage_path && (
               <button
                 onClick={() => {
@@ -565,20 +567,21 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
                   link.click();
                   document.body.removeChild(link);
                 }}
-                className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 h-9 w-9 md:w-auto md:px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors cursor-pointer"
+                title={t("documents.viewer.download")}
               >
-                <Download className="h-4 w-4" />
-                {t("documents.viewer.download")}
+                <Download className="h-4 w-4 shrink-0" />
+                <span className="hidden md:inline">{t("documents.viewer.download")}</span>
               </button>
             )}
           </div>
         </div>
 
         {/* Toolbar & Search Controls */}
-        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 my-3 shrink-0">
+        <div className="flex flex-col gap-2 my-2.5 shrink-0 sm:flex-row sm:justify-between sm:items-center">
           {/* Tabs for workbook sheets */}
           {sheets.length > 1 ? (
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 max-w-full sm:max-w-[55%]">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5 max-w-full sm:max-w-[55%] scroll-smooth">
               {sheets.map((sh, idx) => (
                 <button
                   key={idx}
@@ -598,23 +601,23 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
           )}
 
           {/* Global Search */}
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-64 max-w-md justify-end">
             {Object.keys(tableState.checkboxFilters).length > 0 && (
               <button
                 onClick={() => setTableState((prev) => ({ ...prev, checkboxFilters: {} }))}
-                className="h-9 px-3 flex items-center gap-1 text-xs border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 text-destructive rounded-md cursor-pointer transition-colors"
+                className="h-9 px-3 flex items-center gap-1 text-xs border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 text-destructive rounded-md cursor-pointer transition-colors shrink-0"
               >
                 <X className="h-3.5 w-3.5" />
-                Clear All Filters
+                Clear Filters
               </button>
             )}
-            <div className="relative flex-1 sm:w-64 max-w-md">
+            <div className="relative flex-1">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-ink-muted">
                 <Search className="h-4 w-4" />
               </span>
               <input
                 type="text"
-                placeholder="Global search..."
+                placeholder={t("documents.viewer.searchPlaceholder", "Search spreadsheet...")}
                 value={tableState.globalSearchInput}
                 onChange={(e) =>
                   setTableState((prev) => ({ ...prev, globalSearchInput: e.target.value }))
@@ -634,7 +637,7 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
         </div>
 
         {/* Spreadsheet Table Viewport (Scrolling & Sticky Headers) */}
-        <div className="flex-1 min-h-0 w-full rounded-lg border border-hairline bg-surface overflow-auto relative shadow-inner select-text">
+        <div className="flex-1 min-h-0 w-full rounded-lg border border-hairline bg-surface overflow-auto relative shadow-inner select-text custom-scrollbar">
           {headers.length === 0 ? (
             <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center text-ink-muted">
               <FileSpreadsheet className="h-10 w-10 text-ink-muted/50 mb-2" />
@@ -646,7 +649,7 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
               <thead className="sticky top-0 bg-surface border-b border-hairline z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
                 <tr>
                   {/* Custom index number column # */}
-                  <th className="p-2 border-r border-hairline bg-surface-muted/50 text-center w-12 text-ink-muted font-normal select-none sticky left-0 z-20">
+                  <th className="p-2 border-r border-hairline bg-surface text-center w-12 text-ink-muted font-normal select-none sticky left-0 z-20">
                     #
                   </th>
                   {headers.map((hdr, idx) => {
@@ -812,7 +815,7 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
                     return (
                       <tr key={rowIdx} className="hover:bg-surface-muted/30 group">
                         {/* Custom Row index column # */}
-                        <td className="p-2 border-r border-hairline bg-surface-muted/20 text-center text-ink-muted select-none sticky left-0 z-10 bg-surface">
+                        <td className="p-2 border-r border-hairline bg-surface text-center text-ink-muted select-none sticky left-0 z-10">
                           {actualRowIdx}
                         </td>
                         {headers.map((_, colIdx) => {
@@ -856,7 +859,7 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
           </div>
 
           {/* Pagination Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
             {/* Page Size selector */}
             <div className="flex items-center gap-1.5">
               <span>{t("documents.viewer.rowsPerPage")}</span>
@@ -866,9 +869,9 @@ export function SpreadsheetViewerPage({ id }: { id: string }) {
                   setPageSize(Number(e.target.value));
                   setTableState((prev) => ({ ...prev, currentPage: 1 }));
                 }}
-                className="h-8 border border-hairline rounded bg-surface px-1.5 focus:outline-none focus:ring-1 focus:ring-primary font-semibold text-ink cursor-pointer"
+                className="h-8 border border-hairline rounded bg-surface pl-2 pr-6 focus:outline-none focus:ring-1 focus:ring-primary font-semibold text-ink text-xs cursor-pointer hover:bg-surface-muted transition-colors appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23615d59%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[size:0.5rem_auto] bg-[position:right_0.4rem_center] bg-no-repeat"
               >
-                {[10, 25, 50, 100, 250].map((sz) => (
+                {[100, 250, 500, 1000].map((sz) => (
                   <option key={sz} value={sz}>
                     {sz}
                   </option>

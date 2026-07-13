@@ -44,7 +44,7 @@ function getFileIcon(name: string, mime: string) {
   return <FileIcon className="h-16 w-16 text-ink-muted" strokeWidth={1.5} />;
 }
 
-export function FileViewerPage({ id }: { id: string }) {
+export function FileViewerPage({ id, publicMode = false }: { id: string; publicMode?: boolean }) {
   const router = useRouter();
   const { t } = useTranslation();
   const { data: doc, isLoading, error } = useQuery({
@@ -54,18 +54,18 @@ export function FileViewerPage({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <AppShell>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-          <Loader2 className="h-9 w-9 animate-spin text-primary" />
-          <p className="text-sm text-ink-muted">{t("documents.viewer.loading")}</p>
+      <div className="min-h-screen grid place-items-center bg-background">
+        <div className="flex items-center gap-2 text-sm text-ink-muted">
+          <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          {t("documents.viewer.loading")}
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   if (error || !doc) {
     return (
-      <AppShell>
+      <AppShell publicMode={publicMode}>
         <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-6">
           <div className="h-12 w-12 rounded-full bg-destructive/10 text-destructive grid place-items-center mb-4">
             <FileText className="h-6 w-6" />
@@ -74,13 +74,15 @@ export function FileViewerPage({ id }: { id: string }) {
           <p className="text-sm text-ink-muted mt-1 max-w-sm">
             {t("documents.viewer.notFoundDesc", "We couldn't retrieve the requested document. It might have been deleted or the link is invalid.")}
           </p>
-          <button
-            onClick={() => router.push("/documents")}
-            className="mt-4 inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-active transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t("documents.viewer.back")}
-          </button>
+          {!publicMode && (
+            <button
+              onClick={() => router.push("/documents")}
+              className="mt-4 inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-active transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t("documents.viewer.back")}
+            </button>
+          )}
         </div>
       </AppShell>
     );
@@ -90,14 +92,20 @@ export function FileViewerPage({ id }: { id: string }) {
     ? supabase.storage.from("documents").getPublicUrl(doc.storage_path).data.publicUrl
     : "";
 
+  const isImage = doc.mime?.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(doc.name);
+
   return (
-    <AppShell>
+    <AppShell publicMode={publicMode}>
       <div className="max-w-2xl mx-auto py-6">
 
         {/* Info Card */}
-        <div className="bg-surface rounded-xl border border-hairline p-8 shadow-soft flex flex-col items-center text-center">
-          <div className="h-28 w-28 rounded-2xl bg-surface-muted/50 border border-hairline flex items-center justify-center mb-6">
-            {getFileIcon(doc.name, doc.mime || "")}
+        <div className="bg-surface rounded-xl border border-hairline p-5 sm:p-8 shadow-soft flex flex-col items-center text-center">
+          <div className="h-36 w-36 rounded-2xl bg-surface-muted/50 border border-hairline flex items-center justify-center mb-6 overflow-hidden">
+            {isImage && publicUrl ? (
+              <img src={publicUrl} alt={doc.name} className="h-full w-full object-contain" />
+            ) : (
+              getFileIcon(doc.name, doc.mime || "")
+            )}
           </div>
 
           <h1 className="text-xl font-bold text-ink max-w-full break-all" title={doc.name}>
@@ -132,13 +140,15 @@ export function FileViewerPage({ id }: { id: string }) {
           </div>
 
           <div className="flex items-center gap-3 w-full mt-2">
-            <button
-              onClick={() => router.push("/documents")}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t("documents.viewer.back")}
-            </button>
+            {!publicMode && (
+              <button
+                onClick={() => router.push("/documents")}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 h-10 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {t("documents.viewer.back")}
+              </button>
+            )}
              {doc.storage_path && (
               <>
                 <button

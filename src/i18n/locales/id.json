@@ -272,6 +272,8 @@
     },
     "created": "Dokumen diunggah",
     "deleted": "Dokumen dihapus",
+    "share": "Bagikan",
+    "shareCopied": "Link bagikan disalin ke papan klip!",
     "edit": "Edit Dokumen",
     "deleteConfirm": "Apakah Anda yakin ingin menghapus dokumen ini? Tindakan ini permanen.",
     "form": {

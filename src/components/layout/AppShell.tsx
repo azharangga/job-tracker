@@ -3,11 +3,18 @@ import { useTranslation } from "react-i18next";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { useAuth } from "@/contexts/AuthContext";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Sun, Moon } from "lucide-react";
+import { Logo } from "../common/Logo";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useTheme } from "@/contexts/ThemeContext";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, publicMode = false }: { children: ReactNode; publicMode?: boolean }) {
   const { t } = useTranslation();
-  const { isDemoMode, resetDemoData } = useAuth();
+  const auth = useAuth();
+  const isDemoMode = auth?.isDemoMode ?? false;
+  const resetDemoData = auth?.resetDemoData ?? (() => {});
+  const { theme, toggle } = useTheme();
+
   return (
     <div className="flex min-h-screen w-full bg-background flex-col">
       {isDemoMode && (
@@ -26,13 +33,43 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       )}
       <div className="flex flex-1 w-full">
-        <Sidebar />
+        {!publicMode && <Sidebar />}
         <div className="flex-1 flex flex-col min-w-0">
-          <Topbar />
+          {!publicMode ? (
+            <Topbar />
+          ) : (
+            <header className="border-b border-hairline bg-surface h-14 shrink-0 flex items-center justify-between px-6 sm:px-8">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Logo className="h-7 w-7 shrink-0" />
+                <div className="flex flex-col min-w-0 text-left">
+                  <span className="text-sm font-semibold text-ink leading-none truncate">
+                    {t("app.name")}
+                  </span>
+                  <span className="text-[11px] text-ink-faint leading-tight mt-0.5 truncate">
+                    {t("app.tagline")}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <LanguageSwitcher />
+                <button
+                  onClick={toggle}
+                  aria-label={t("topbar.toggleTheme")}
+                  className="h-8 w-8 grid place-items-center rounded-md border border-hairline bg-surface hover:bg-surface-muted transition-colors text-ink-muted hover:text-ink"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" strokeWidth={1.75} />
+                  ) : (
+                    <Moon className="h-4 w-4" strokeWidth={1.75} />
+                  )}
+                </button>
+              </div>
+            </header>
+          )}
           <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-10 lg:py-8 min-w-0">
             {children}
           </main>
-          <footer className="border-t border-hairline px-4 sm:px-6 py-4 text-[11px] sm:text-xs text-ink-faint flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+          <footer className="border-t border-hairline px-4 sm:px-6 py-4 text-[11px] sm:text-xs text-ink-faint flex flex-col items-center sm:flex-row sm:items-center sm:justify-between gap-1 text-center sm:text-left">
             <span>{t("footer.copyright", { year: new Date().getFullYear() })}</span>
             <span>{t("footer.tagline")}</span>
           </footer>
