@@ -13,6 +13,7 @@
     "companies": "Companies",
     "contacts": "Contacts",
     "documents": "Documents",
+    "shortlinks": "Shortlinks",
     "tasks": "Tasks",
     "notes": "Notes",
     "analytics": "Analytics",
@@ -57,7 +58,21 @@
     "no": "No",
     "of": "of",
     "shown": "shown",
-    "total": "total"
+    "total": "total",
+    "createdAt": "Created At"
+  },
+  "shortlinks": {
+    "desc": "Manage all your shortened URLs",
+    "create": "Create New",
+    "emptyTitle": "No Shortlinks",
+    "emptyDesc": "You haven't created any shortened URLs yet.",
+    "created": "Shortlink created successfully!",
+    "createTitle": "Create Shortlink",
+    "targetUrl": "Target URL",
+    "customAlias": "Custom Alias (Optional)",
+    "customAliasHint": "Leave blank to generate a random 6-character code.",
+    "deleteTitle": "Delete Shortlink",
+    "deleteDesc": "Are you sure you want to delete this shortlink? It will no longer redirect to the target URL."
   },
   "footer": {
     "copyright": "© {{year}} Job Tracker - Personal workspace",

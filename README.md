@@ -28,6 +28,7 @@ Job Tracker adalah aplikasi web modern dan profesional yang dirancang khusus unt
 - Manajemen Kontak Perekrut: Penyimpanan data jaringan profesional seperti email, nomor telepon, dan tautan profil LinkedIn perekrut yang terhubung langsung dengan setiap entitas lamaran.
 - Manajemen Dokumen Pendukung: Pemuatan berkas portofolio, CV, surat lamaran, serta preview dokumen terintegrasi (PDF, Gambar, dan Teks) tanpa perlu mengunduh file terlebih dahulu.
 - Sistem Keamanan & Autentikasi Kustom: Autentikasi aman yang diproses melalui Supabase Edge Functions dengan validasi ketat dan hash enkripsi kata sandi menggunakan Bcrypt.
+- Pemendek URL (URL Shortener): Alat bawaan untuk memperpendek tautan apa pun secara bebas dengan dukungan custom alias dan kontrol status tautan (aktif/nonaktif).
 - Lokalisasi Penuh (Multi-bahasa): Dukungan pergantian bahasa secara langsung (Bahasa Indonesia dan Bahasa Inggris) dengan pengaturan tersimpan.
 - Desain Responsif & Premium: Tampilan yang sepenuhnya dioptimalkan baik untuk perangkat desktop beresolusi tinggi maupun perangkat seluler dengan animasi transisi yang sangat halus menggunakan Framer Motion.
 
@@ -53,6 +54,7 @@ job-tracker/
 │   │   │   ├── kanban/                     # Halaman kanban board status lamaran
 │   │   │   ├── notes/                      # Halaman catatan bebas
 │   │   │   ├── settings/                   # Halaman pengaturan akun & preferensi
+│   │   │   ├── shortlinks/                 # Halaman manajemen URL shortener mandiri
 │   │   │   ├── tasks/                      # Halaman daftar tugas (to-do)
 │   │   │   ├── layout.tsx                  # Layout dengan AppShell (Sidebar + Topbar)
 │   │   │   └── page.tsx                    # Root redirect ke /applications
@@ -82,6 +84,7 @@ job-tracker/
 │   │   ├── LoginPage.tsx                   # Komponen halaman login
 │   │   ├── NotesPage.tsx                   # Komponen halaman catatan
 │   │   ├── SettingsPage.tsx                # Komponen halaman pengaturan
+│   │   ├── ShortlinksPage.tsx              # Komponen halaman manajemen shortlinks
 │   │   └── TasksPage.tsx                   # Komponen halaman tugas
 │   ├── hooks/                              # Custom React hooks (data fetching, UI)
 │   ├── i18n/

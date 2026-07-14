@@ -12,6 +12,7 @@ import {
   CheckSquare,
   StickyNote,
   BarChart3,
+  Link as LinkIcon,
   Settings,
   LogOut,
   ChevronLeft,
@@ -43,6 +44,7 @@ export const NAV_ITEMS: Item[] = [
   { to: "/notes", labelKey: "nav.notes", icon: StickyNote },
   { to: "/documents", labelKey: "nav.documents", icon: FileText },
   { to: "/contacts", labelKey: "nav.contacts", icon: Users },
+  { to: "/shortlinks", labelKey: "nav.shortlinks", icon: LinkIcon },
   { to: "/analytics", labelKey: "nav.analytics", icon: BarChart3 },
 ];
 

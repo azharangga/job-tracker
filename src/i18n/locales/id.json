@@ -13,6 +13,7 @@
     "companies": "Perusahaan",
     "contacts": "Kontak",
     "documents": "Dokumen",
+    "shortlinks": "Shortlinks",
     "tasks": "Tugas",
     "notes": "Catatan",
     "analytics": "Analitik",
@@ -57,7 +58,8 @@
     "no": "Tidak",
     "of": "dari",
     "shown": "ditampilkan",
-    "total": "total"
+    "total": "total",
+    "createdAt": "Dibuat Pada"
   },
   "footer": {
     "copyright": "© {{year}} Job Tracker - Ruang kerja pribadi",
@@ -309,9 +311,22 @@
       "publicSharedLink": "Link Dibagikan Publik"
     },
     "downloadModal": {
-      "title": "Unduh Dokumen",
-      "desc": "Apakah Anda yakin ingin mengunduh file ini?"
+      "confirmDelete": "Hapus template?",
+      "confirmDeleteDesc": "Apakah Anda yakin ingin menghapus template ini?"
     }
+  },
+  "shortlinks": {
+    "desc": "Kelola semua URL yang diperpendek",
+    "create": "Buat Baru",
+    "emptyTitle": "Tidak ada Shortlinks",
+    "emptyDesc": "Anda belum membuat URL yang diperpendek.",
+    "created": "Shortlink berhasil dibuat!",
+    "createTitle": "Buat Shortlink",
+    "targetUrl": "URL Tujuan",
+    "customAlias": "Custom Alias (Opsional)",
+    "customAliasHint": "Kosongkan untuk membuat 6 karakter acak otomatis.",
+    "deleteTitle": "Hapus Shortlink",
+    "deleteDesc": "Yakin ingin menghapus shortlink ini? Link tidak akan bisa diakses lagi."
   },
   "calendar": {
     "title": "Kalender",

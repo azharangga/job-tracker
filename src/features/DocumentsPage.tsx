@@ -177,7 +177,7 @@ export function DocumentsPage() {
     if (!editDoc) return;
     setUploadProgress(0);
     try {
-      let patch: any = {
+      const patch: any = {
         name: editName,
         kind: editKind,
         version: editVersion,
