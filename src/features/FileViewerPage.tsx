@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { fileSize, formatDate } from "@/lib/format";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -55,19 +55,61 @@ export function FileViewerPage({ id, publicMode = false }: { id: string; publicM
   const router = useRouter();
   const { t } = useTranslation();
   const [downloadConfirmOpen, setDownloadConfirmOpen] = useState(false);
-  const { data: doc, isLoading, error } = useQuery({
+  const [progress, setProgress] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [loadingFinished, setLoadingFinished] = useState(false);
+
+  const { data: doc, isLoading: isDocLoading, error } = useQuery({
     queryKey: ["document", id],
     queryFn: () => getDocument(id),
   });
 
-  if (isLoading) {
+  const isImage = doc?.mime?.startsWith("image/") || (doc && /\.(png|jpe?g|webp|gif)$/i.test(doc.name));
+  const isDataReady = !isDocLoading && doc && (!isImage || imageLoaded);
+
+  useEffect(() => {
+    let lastTime = performance.now();
+    let animationFrameId: number;
+    
+    const updateProgress = (time: number) => {
+      setProgress((prev) => {
+        if (isDataReady) {
+          if (prev >= 100) {
+            setTimeout(() => setLoadingFinished(true), 150);
+            return 100;
+          }
+          const delta = (time - lastTime) / 1000;
+          const step = Math.max(0.5, (100 - prev) * 15 * delta);
+          const next = prev + step;
+          return next >= 100 ? 100 : next;
+        } else {
+          if (prev >= 99) {
+            return 99;
+          }
+          const delta = (time - lastTime) / 1000;
+          const remaining = 99 - prev;
+          const rate = remaining > 70 ? 25 : remaining > 40 ? 12 : remaining > 15 ? 4 : 0.8;
+          const step = rate * delta;
+          return Math.min(prev + step, 99);
+        }
+      });
+      
+      lastTime = time;
+      animationFrameId = requestAnimationFrame(updateProgress);
+    };
+    
+    animationFrameId = requestAnimationFrame(updateProgress);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isDataReady]);
+
+  if (isDocLoading) {
     return (
-      <div className="min-h-screen grid place-items-center bg-background">
-        <div className="flex items-center gap-2 text-sm text-ink-muted">
-          <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          {t("documents.viewer.loading")}
+      <AppShell publicMode={publicMode}>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-6 gap-3">
+          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <p className="text-sm text-ink-muted">{t("documents.viewer.loading")} ({Math.floor(progress)}%)</p>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
@@ -100,17 +142,26 @@ export function FileViewerPage({ id, publicMode = false }: { id: string; publicM
     ? supabase.storage.from("documents").getPublicUrl(doc.storage_path).data.publicUrl
     : "";
 
-  const isImage = doc.mime?.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(doc.name);
-
   return (
     <AppShell publicMode={publicMode}>
-      <div className="max-w-2xl mx-auto py-6">
+      {!loadingFinished && (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-6 gap-3">
+          <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <p className="text-sm text-ink-muted">{t("documents.viewer.loading")} ({Math.floor(progress)}%)</p>
+        </div>
+      )}
+      <div className={`max-w-2xl mx-auto py-6 ${!loadingFinished ? "hidden" : ""}`}>
 
         {/* Info Card */}
         <div className="bg-surface rounded-xl border border-hairline p-5 sm:p-8 shadow-soft flex flex-col items-center text-center">
           <div className="h-36 w-36 rounded-2xl bg-surface-muted/50 border border-hairline flex items-center justify-center mb-6 overflow-hidden">
             {isImage && publicUrl ? (
-              <img src={publicUrl} alt={doc.name} className="h-full w-full object-contain" />
+              <img 
+                src={publicUrl} 
+                alt={doc.name} 
+                className="h-full w-full object-contain" 
+                onLoad={() => setImageLoaded(true)}
+              />
             ) : (
               getFileIcon(doc.name, doc.mime || "")
             )}

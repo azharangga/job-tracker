@@ -286,6 +286,7 @@
     },
     "viewer": {
       "loading": "Memuat dokumen...",
+      "parsing": "Memproses...",
       "notFound": "Dokumen tidak ditemukan",
       "size": "Ukuran",
       "uploaded": "Diunggah",

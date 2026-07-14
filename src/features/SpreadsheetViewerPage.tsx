@@ -113,6 +113,8 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isParsingWorkbook, setIsParsingWorkbook] = useState(false);
   const [downloadConfirmOpen, setDownloadConfirmOpen] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [loadingFinished, setLoadingFinished] = useState(false);
 
   // Grouped table states for instant batch updates and single-frame renders
   const [tableState, setTableState] = useState<TableState>(INITIAL_TABLE_STATE);
@@ -124,6 +126,61 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
   const publicUrl = doc?.storage_path
     ? supabase.storage.from("documents").getPublicUrl(doc.storage_path).data.publicUrl
     : "";
+
+  const isDataReady = !isDocLoading && !isParsing && sheets.length > 0;
+
+  // Smooth progress calculation integrating metadata loading, download progress, and parsing
+  useEffect(() => {
+    let lastTime = performance.now();
+    let animationFrameId: number;
+    
+    const updateProgress = (time: number) => {
+      setProgress((prev) => {
+        if (isDataReady) {
+          if (prev >= 100) {
+            setTimeout(() => setLoadingFinished(true), 150);
+            return 100;
+          }
+          const delta = (time - lastTime) / 1000;
+          const step = Math.max(0.5, (100 - prev) * 15 * delta);
+          const next = prev + step;
+          return next >= 100 ? 100 : next;
+        } else {
+          if (prev >= 99) {
+            return 99;
+          }
+          const delta = (time - lastTime) / 1000;
+          
+          let target = prev;
+          if (isDocLoading) {
+            const remaining = 30 - prev;
+            const step = Math.max(0.1, remaining * 1.5 * delta);
+            target = prev + step;
+          } else if (isParsing) {
+            if (isParsingWorkbook) {
+              const remaining = 98 - prev;
+              const step = Math.max(0.05, remaining * 0.5 * delta);
+              target = prev + step;
+            } else {
+              const dlTarget = 30 + Math.round((downloadProgress / 100) * 55);
+              if (prev < dlTarget) {
+                target = prev + Math.max(0.5, (dlTarget - prev) * 5 * delta);
+              } else {
+                target = prev + 0.1 * delta;
+              }
+            }
+          }
+          return Math.min(target, 99);
+        }
+      });
+      
+      lastTime = time;
+      animationFrameId = requestAnimationFrame(updateProgress);
+    };
+    
+    animationFrameId = requestAnimationFrame(updateProgress);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isDocLoading, isParsing, isParsingWorkbook, downloadProgress, sheets.length, isDataReady]);
 
   // Click away listener for filter dropdowns
   useEffect(() => {
@@ -503,14 +560,12 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
     setTableState(INITIAL_TABLE_STATE);
   };
 
-  const isLoadingAll = isDocLoading || isParsing || (!docError && !parseError && sheets.length === 0);
-
-  if (isLoadingAll) {
+  if (isDocLoading) {
     return (
       <div className="min-h-screen grid place-items-center bg-background">
         <div className="flex items-center gap-2 text-sm text-ink-muted">
           <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          {t("documents.viewer.loading")}
+          {t("documents.viewer.loading")} ({Math.floor(progress)}%)
         </div>
       </div>
     );
@@ -541,51 +596,63 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
     );
   }
 
+  if (!loadingFinished) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background">
+        <div className="flex items-center gap-2 text-sm text-ink-muted">
+          <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          {t("documents.viewer.loading")} ({Math.floor(progress)}%)
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AppShell publicMode={publicMode}>
       <div className="flex flex-col h-[calc(100vh-6rem)]">
-        <div className="flex justify-between items-start gap-4 pb-3 border-b border-hairline shrink-0">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-xl font-bold text-ink mt-1.5 flex items-start gap-2 break-words">
+        <div className="flex flex-col gap-2 pb-3 border-b border-hairline shrink-0">
+          {/* Row 1: Title and Actions */}
+          <div className="flex justify-between items-start gap-4">
+            <h1 className="text-lg sm:text-xl font-bold text-ink mt-1.5 flex items-start gap-2 break-words min-w-0 flex-1">
               <FileSpreadsheet className="h-5 w-5 text-emerald-600 shrink-0 mt-1" />
               <span className="break-all">{doc.name}</span>
             </h1>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted mt-1">
-              <span>{t("documents.viewer.size")}: {fileSize(doc.size)}</span>
-              <span>•</span>
-              <span>{t("documents.viewer.uploaded")}: {formatDate(doc.created_at)}</span>
-              {publicMode && (
-                <>
-                  <span>•</span>
-                  <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium">
-                    <Globe className="h-3.5 w-3.5" />
-                    {t("documents.viewer.publicShared", "Public Shared")}
-                  </span>
-                </>
+            <div className="flex items-center gap-2 shrink-0 mt-1.5">
+              {!publicMode && (
+                <button
+                  onClick={() => router.push("/documents")}
+                  className="inline-flex items-center justify-center gap-1.5 h-9 w-9 md:w-auto md:px-3.5 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
+                  title={t("documents.viewer.back")}
+                >
+                  <ArrowLeft className="h-4 w-4 shrink-0" />
+                  <span className="hidden md:inline">{t("documents.viewer.back")}</span>
+                </button>
+              )}
+              {doc.storage_path && (
+                <button
+                  onClick={() => setDownloadConfirmOpen(true)}
+                  className="inline-flex items-center justify-center gap-1.5 h-9 w-9 md:w-auto md:px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors cursor-pointer"
+                  title={t("documents.viewer.download")}
+                >
+                  <Download className="h-4 w-4 shrink-0" />
+                  <span className="hidden md:inline">{t("documents.viewer.download")}</span>
+                </button>
               )}
             </div>
           </div>
-
-          <div className="flex items-center gap-2 shrink-0 mt-1">
-            {!publicMode && (
-              <button
-                onClick={() => router.push("/documents")}
-                className="inline-flex items-center justify-center gap-1.5 h-9 w-9 md:w-auto md:px-3.5 rounded-md border border-hairline bg-surface hover:bg-surface-muted text-ink text-sm font-medium transition-colors cursor-pointer"
-                title={t("documents.viewer.back")}
-              >
-                <ArrowLeft className="h-4 w-4 shrink-0" />
-                <span className="hidden md:inline">{t("documents.viewer.back")}</span>
-              </button>
-            )}
-            {doc.storage_path && (
-              <button
-                onClick={() => setDownloadConfirmOpen(true)}
-                className="inline-flex items-center justify-center gap-1.5 h-9 w-9 md:w-auto md:px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors cursor-pointer"
-                title={t("documents.viewer.download")}
-              >
-                <Download className="h-4 w-4 shrink-0" />
-                <span className="hidden md:inline">{t("documents.viewer.download")}</span>
-              </button>
+          {/* Row 2: Metadata details */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
+            <span>{t("documents.viewer.size")}: {fileSize(doc.size)}</span>
+            <span>•</span>
+            <span>{t("documents.viewer.uploaded")}: {formatDate(doc.created_at)}</span>
+            {publicMode && (
+              <>
+                <span>•</span>
+                <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium">
+                  <Globe className="h-3.5 w-3.5" />
+                  {t("documents.viewer.publicShared", "Public Shared")}
+                </span>
+              </>
             )}
           </div>
         </div>
@@ -680,7 +747,7 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
                     return (
                       <th key={idx} className="p-2 border-r border-hairline font-semibold text-ink relative min-w-[150px]">
                         <div className="flex items-center justify-between gap-1.5">
-                          <span className="truncate pr-5" title={String(hdr)}>
+                          <span className="whitespace-normal break-words pr-5" title={String(hdr)}>
                             {String(hdr) || `Column ${idx + 1}`}
                           </span>
                           
@@ -837,12 +904,12 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
 
                           const cellVal = row[colIdx] === undefined ? "" : String(row[colIdx]);
                           return (
-                            <td
-                              key={colIdx}
-                              onClick={() => copyToClipboard(cellVal)}
-                              className="p-2 border-r border-hairline truncate max-w-[240px] cursor-pointer hover:bg-primary/5 hover:text-primary transition-colors relative"
-                              title="Click to copy value"
-                            >
+                             <td
+                               key={colIdx}
+                               onClick={() => copyToClipboard(cellVal)}
+                               className="p-2 border-r border-hairline whitespace-normal break-words cursor-pointer hover:bg-primary/5 hover:text-primary transition-colors relative"
+                               title="Click to copy value"
+                             >
                               {cellVal}
                               <Copy className="h-3 w-3 absolute right-2 top-1/2 -translate-y-1/2 text-ink-muted opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                             </td>

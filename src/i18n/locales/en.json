@@ -286,6 +286,7 @@
     },
     "viewer": {
       "loading": "Loading document...",
+      "parsing": "Parsing...",
       "notFound": "Document not found",
       "size": "Size",
       "uploaded": "Uploaded",

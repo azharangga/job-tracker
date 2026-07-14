@@ -103,19 +103,19 @@ export function AppShell({ children, publicMode = false }: { children: ReactNode
           {!publicMode ? (
             <Topbar />
           ) : (
-            <header className="sticky top-0 z-50 border-b border-hairline bg-surface/90 backdrop-blur h-14 shrink-0 flex items-center justify-between px-6 sm:px-8">
-              <div className="flex items-center gap-2.5 min-w-0">
+            <header className="sticky top-0 z-50 border-b border-hairline bg-surface/90 backdrop-blur h-14 shrink-0 flex items-center justify-between px-4 sm:px-8">
+              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                 <Logo className="h-7 w-7 shrink-0" />
                 <div className="flex flex-col min-w-0 text-left">
                   <span className="text-sm font-semibold text-ink leading-none truncate">
                     {t("app.name")}
                   </span>
-                  <span className="text-[11px] text-ink-faint leading-tight mt-0.5 truncate">
+                  <span className="text-[11px] text-ink-faint leading-tight mt-0.5 truncate hidden sm:block">
                     {t("app.tagline")}
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <LanguageSwitcher />
                 <button
                   onClick={toggle}
