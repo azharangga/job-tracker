@@ -726,10 +726,10 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
           ) : (
             <table className="w-full text-xs text-left border-separate border-spacing-0 min-w-max">
               {/* Sticky Header */}
-              <thead className="sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
+              <thead className="shadow-[0_1px_0_0_rgba(0,0,0,0.06)]">
                 <tr>
                   {/* Custom index number column # */}
-                  <th className="p-2 border-b border-r border-hairline bg-surface text-center w-12 text-ink-muted font-normal select-none sticky left-0 z-30">
+                  <th className="p-2 border-b border-r border-hairline bg-surface text-center w-12 text-ink-muted font-normal select-none sticky top-0 left-0 z-30">
                     #
                   </th>
                   {headers.map((hdr, idx) => {
@@ -745,7 +745,7 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
                       : false;
 
                     return (
-                      <th key={idx} className="p-2 border-b border-r border-hairline font-semibold text-ink relative min-w-[150px] bg-surface">
+                      <th key={idx} className="p-2 border-b border-r border-hairline font-semibold text-ink sticky top-0 z-10 min-w-[150px] bg-surface">
                         <div className="flex items-center justify-between gap-1.5">
                           <span className="whitespace-normal break-words pr-5" title={String(hdr)}>
                             {String(hdr) || `Column ${idx + 1}`}
@@ -893,9 +893,9 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
                   paginatedRows.map((row, rowIdx) => {
                     const actualRowIdx = (tableState.currentPage - 1) * pageSize + rowIdx + 1;
                     return (
-                      <tr key={rowIdx} className="hover:bg-surface-muted/30 group">
+                      <tr key={rowIdx} className="hover:bg-surface-muted group">
                         {/* Custom Row index column # */}
-                        <td className="p-2 border-b border-r border-hairline bg-surface text-center text-ink-muted select-none sticky left-0 z-20 group-hover:bg-surface-muted/30 transition-colors">
+                        <td className="p-2 border-b border-r border-hairline bg-surface text-center text-ink-muted select-none sticky left-0 z-20 group-hover:bg-surface-muted transition-colors">
                           {actualRowIdx}
                         </td>
                         {headers.map((_, colIdx) => {
@@ -907,7 +907,7 @@ export function SpreadsheetViewerPage({ id, publicMode = false, allowedSheets }:
                              <td
                                key={colIdx}
                                onClick={() => copyToClipboard(cellVal)}
-                               className="p-2 border-b border-r border-hairline whitespace-normal break-words cursor-pointer hover:bg-primary/5 hover:text-primary transition-colors relative"
+                               className="p-2 border-b border-r border-hairline whitespace-normal break-words cursor-pointer hover:bg-primary/5 hover:text-primary transition-colors relative z-0"
                                title="Click to copy value"
                              >
                               {cellVal}
