@@ -20,7 +20,27 @@ type Shortlink = {
   created_at: string;
 };
 
+const DEMO_KEY = "demo_shortlinks";
+
+function isDemo() {
+  if (typeof window === "undefined") return false;
+  return !!localStorage.getItem("demo_user_session");
+}
+
+function getDemoData(): Shortlink[] {
+  if (typeof window === "undefined") return [];
+  const data = localStorage.getItem(DEMO_KEY);
+  return data ? JSON.parse(data) : [];
+}
+
+function saveDemoData(data: Shortlink[]) {
+  localStorage.setItem(DEMO_KEY, JSON.stringify(data));
+}
+
 async function fetchShortlinks(): Promise<Shortlink[]> {
+  if (isDemo()) {
+    return getDemoData().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
   const { data, error } = await supabase
     .from("shortlinks" as any)
     .select("*")
@@ -44,6 +64,23 @@ export function ShortlinksPage() {
 
   const createMut = useMutation({
     mutationFn: async (payload: { url: string; customAlias: string }) => {
+      if (isDemo()) {
+        const demoData = getDemoData();
+        const short_code = payload.customAlias || Math.random().toString(36).substring(2, 8);
+        if (demoData.some(d => d.short_code === short_code)) {
+          throw new Error("Custom alias is already taken");
+        }
+        const newLink: Shortlink = {
+          id: crypto.randomUUID(),
+          target_url: payload.url,
+          short_code,
+          is_active: true,
+          created_at: new Date().toISOString(),
+        };
+        saveDemoData([...demoData, newLink]);
+        return newLink;
+      }
+
       const res = await fetch("/api/shorten", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,6 +105,15 @@ export function ShortlinksPage() {
 
   const updateMut = useMutation({
     mutationFn: async (payload: { id: string; target_url: string; short_code: string }) => {
+      if (isDemo()) {
+        const demoData = getDemoData();
+        if (demoData.some(d => d.short_code === payload.short_code && d.id !== payload.id)) {
+          throw new Error("Custom alias is already taken");
+        }
+        saveDemoData(demoData.map(d => d.id === payload.id ? { ...d, target_url: payload.target_url, short_code: payload.short_code } : d));
+        return;
+      }
+
       const { error } = await supabase
         .from("shortlinks" as any)
         .update({ target_url: payload.target_url, short_code: payload.short_code })
@@ -91,6 +137,12 @@ export function ShortlinksPage() {
 
   const toggleStatusMut = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      if (isDemo()) {
+        const demoData = getDemoData();
+        saveDemoData(demoData.map(d => d.id === id ? { ...d, is_active } : d));
+        return;
+      }
+
       const { error } = await supabase
         .from("shortlinks" as any)
         .update({ is_active })
@@ -107,6 +159,12 @@ export function ShortlinksPage() {
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
+      if (isDemo()) {
+        const demoData = getDemoData();
+        saveDemoData(demoData.filter(d => d.id !== id));
+        return;
+      }
+
       const { error } = await supabase.from("shortlinks" as any).delete().eq("id", id);
       if (error) throw error;
     },

@@ -65,7 +65,7 @@ job-tracker/
 │   │   ├── loading.tsx                     # Global loading skeleton
 │   │   └── not-found.tsx                   # Halaman 404
 │   ├── components/
-│   │   ├── common/                         # Komponen reusable lintas fitur (Avatar, Badge, Logo)
+│   │   ├── common/                         # Komponen reusable berbagai fitur
 │   │   ├── layout/                         # Komponen tata letak (AppShell, Sidebar, Topbar)
 │   │   └── ui/                             # Komponen primitif berbasis Radix UI (shadcn/ui)
 │   ├── constants/                          # Variabel konstanta & enum domain aplikasi
@@ -94,7 +94,7 @@ job-tracker/
 │   │   └── supabase/                       # Konfigurasi & instansiasi Supabase client SDK
 │   ├── lib/                                # Fungsi utilitas umum (toast, format, utils)
 │   ├── providers/
-│   │   ├── ProtectedLayout.tsx             # Guard autentikasi — redirect ke /login jika belum login
+│   │   ├── ProtectedLayout.tsx             # Guard autentikasi redirect ke /login
 │   │   └── RootProviders.tsx               # Provider root (React Query, Theme, Auth)
 │   ├── services/                           # Lapisan akses data (Repository / Service)
 │   │   ├── demo.ts                         # Akses data offline untuk Mode Demo (Local Storage)
