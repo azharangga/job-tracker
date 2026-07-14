@@ -16,11 +16,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       };
     }
     return {
-      title: `${doc.name} - Shared Document`,
-      description: `View and download shared document: ${doc.name}`,
+      title: doc.name,
+      description: "Access and download this document via Job Tracker. This page provides a live preview and detailed information of the file shared with you.",
       openGraph: {
         title: doc.name,
-        description: `Public shared document: ${doc.name}`,
+        description: "Access and download this document via Job Tracker. This page provides a live preview and detailed information of the file shared with you.",
       },
     };
   } catch (e) {
