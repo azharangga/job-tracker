@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Bold,
   Italic,
@@ -60,13 +61,16 @@ const SPECIAL_SYMBOLS = ["✅", "❌", "⭐", "•", "➔", "©", "™", "💡",
 export function RichTextEditor({
   value,
   onChange,
-  placeholder = "Tulis deskripsi atau persyaratan di sini...",
+  placeholder,
   className,
   minHeight = "240px",
 }: RichTextEditorProps) {
+  const { t } = useTranslation();
   const editorRef = useRef<HTMLDivElement>(null);
   const textColorInputRef = useRef<HTMLInputElement>(null);
   const bgColorInputRef = useRef<HTMLInputElement>(null);
+
+  const defaultPlaceholder = placeholder || t("editor.placeholder");
 
   const [isFocused, setIsFocused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -107,7 +111,7 @@ export function RichTextEditor({
   };
 
   const insertLink = () => {
-    const url = prompt("Masukkan URL Tautan (misal https://example.com):");
+    const url = prompt(t("editor.link"));
     if (url) {
       handleExecCommand("createLink", url);
     }
@@ -122,14 +126,14 @@ export function RichTextEditor({
       <table style="width:100%; border-collapse:collapse; margin:12px 0; border:1px solid #cbd5e1;">
         <thead>
           <tr style="background:#f8fafc;">
-            <th style="border:1px solid #cbd5e1; padding:8px; text-align:left; font-weight:600;">Kolom 1</th>
-            <th style="border:1px solid #cbd5e1; padding:8px; text-align:left; font-weight:600;">Kolom 2</th>
+            <th style="border:1px solid #cbd5e1; padding:8px; text-align:left; font-weight:600;">${t("editor.col1")}</th>
+            <th style="border:1px solid #cbd5e1; padding:8px; text-align:left; font-weight:600;">${t("editor.col2")}</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="border:1px solid #cbd5e1; padding:8px;">Isi 1</td>
-            <td style="border:1px solid #cbd5e1; padding:8px;">Isi 2</td>
+            <td style="border:1px solid #cbd5e1; padding:8px;">${t("editor.item1")}</td>
+            <td style="border:1px solid #cbd5e1; padding:8px;">${t("editor.item2")}</td>
           </tr>
         </tbody>
       </table><p></p>
@@ -141,7 +145,7 @@ export function RichTextEditor({
     <div
       className={cn(
         "rounded-lg border border-hairline bg-surface shadow-xs overflow-hidden transition-all flex flex-col",
-        isFocused && "ring-1 ring-primary border-primary",
+        isFocused && "border-primary shadow-[0_0_0_2px_oklch(0.58_0.16_246/0.18)]",
         isFullscreen && "fixed inset-4 z-50 shadow-2xl rounded-xl border-primary",
         className
       )}
@@ -154,7 +158,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => handleExecCommand("undo")}
-            title="Urungkan (Undo - Ctrl+Z)"
+            title={t("editor.undo")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <RotateCcw className="h-3.5 w-3.5" strokeWidth={2} />
@@ -162,7 +166,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => handleExecCommand("redo")}
-            title="Ulangi (Redo - Ctrl+Y)"
+            title={t("editor.redo")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <RotateCw className="h-3.5 w-3.5" strokeWidth={2} />
@@ -173,41 +177,41 @@ export function RichTextEditor({
           {/* Group 2: Paragraph / Heading Format Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-1 px-2.5 py-1 text-xs rounded bg-surface border border-hairline text-ink font-medium hover:bg-surface-muted transition-colors cursor-pointer">
-              <span>Teks Normal</span>
+              <span>{t("editor.textStyle")}</span>
               <ChevronDown className="h-3 w-3 text-ink-faint" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-44">
               <DropdownMenuItem onClick={() => handleExecCommand("formatBlock", "<p>")}>
-                <span>Teks Normal</span>
+                <span>{t("editor.normalText")}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExecCommand("formatBlock", "<h1>")} className="font-bold">
-                <span>Judul 1 (H1)</span>
+                <span>{t("editor.heading1")}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExecCommand("formatBlock", "<h2>")} className="font-semibold">
-                <span>Judul 2 (H2)</span>
+                <span>{t("editor.heading2")}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExecCommand("formatBlock", "<h3>")} className="font-medium">
-                <span>Judul 3 (H3)</span>
+                <span>{t("editor.heading3")}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleExecCommand("formatBlock", "<blockquote>")}>
                 <Quote className="h-3.5 w-3.5 mr-2" />
-                <span>Kutipan (Quote)</span>
+                <span>{t("editor.quote")}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExecCommand("formatBlock", "<pre>")}>
                 <Code className="h-3.5 w-3.5 mr-2" />
-                <span>Blok Kode</span>
+                <span>{t("editor.codeBlock")}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
           <div className="h-4 w-[1px] bg-hairline mx-1" />
 
-          {/* Group 3: Core Formatting Icon Buttons (Tampak Langsung) */}
+          {/* Group 3: Core Formatting Icon Buttons */}
           <button
             type="button"
             onClick={() => handleExecCommand("bold")}
-            title="Tebal (Bold - Ctrl+B)"
+            title={t("editor.bold")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer font-bold"
           >
             <Bold className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -215,7 +219,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => handleExecCommand("italic")}
-            title="Miring (Italic - Ctrl+I)"
+            title={t("editor.italic")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <Italic className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -223,7 +227,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => handleExecCommand("underline")}
-            title="Garis Bawah (Underline - Ctrl+U)"
+            title={t("editor.underline")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <Underline className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -231,7 +235,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => handleExecCommand("strikeThrough")}
-            title="Coret (Strikethrough)"
+            title={t("editor.strikethrough")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <Strikethrough className="h-3.5 w-3.5" strokeWidth={2} />
@@ -239,11 +243,11 @@ export function RichTextEditor({
 
           <div className="h-4 w-[1px] bg-hairline mx-1" />
 
-          {/* Group 4: Colors (Text Color & Highlight Stabilo) */}
+          {/* Group 4: Colors */}
           <button
             type="button"
             onClick={() => textColorInputRef.current?.click()}
-            title="Warna Teks"
+            title={t("editor.textColor")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <Palette className="h-3.5 w-3.5 text-primary" strokeWidth={2} />
@@ -253,7 +257,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => bgColorInputRef.current?.click()}
-            title="Sorot Warna Stabilo"
+            title={t("editor.highlightColor")}
             className="p-1.5 rounded hover:bg-surface transition-colors cursor-pointer"
           >
             <Highlighter className="h-3.5 w-3.5 text-amber-500" strokeWidth={2} />
@@ -262,11 +266,11 @@ export function RichTextEditor({
 
           <div className="h-4 w-[1px] bg-hairline mx-1" />
 
-          {/* Group 5: Lists & Indentation Icons (Tampak Langsung) */}
+          {/* Group 5: Lists & Indentation Icons */}
           <button
             type="button"
             onClick={() => handleExecCommand("insertUnorderedList")}
-            title="Daftar Poin (Bullet List)"
+            title={t("editor.bulletList")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <List className="h-3.5 w-3.5" strokeWidth={2} />
@@ -274,7 +278,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => handleExecCommand("insertOrderedList")}
-            title="Daftar Angka (Numbered List)"
+            title={t("editor.numberedList")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <ListOrdered className="h-3.5 w-3.5" strokeWidth={2} />
@@ -282,7 +286,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => handleExecCommand("indent")}
-            title="Geser Kanan (Tab)"
+            title={t("editor.indent")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <Indent className="h-3.5 w-3.5" strokeWidth={2} />
@@ -290,11 +294,11 @@ export function RichTextEditor({
 
           <div className="h-4 w-[1px] bg-hairline mx-1" />
 
-          {/* Group 6: Alignment Icons (Tampak Langsung) */}
+          {/* Group 6: Alignment Icons */}
           <button
             type="button"
             onClick={() => handleExecCommand("justifyLeft")}
-            title="Rata Kiri"
+            title={t("editor.alignLeft")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <AlignLeft className="h-3.5 w-3.5" strokeWidth={2} />
@@ -302,7 +306,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => handleExecCommand("justifyCenter")}
-            title="Rata Tengah"
+            title={t("editor.alignCenter")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <AlignCenter className="h-3.5 w-3.5" strokeWidth={2} />
@@ -310,7 +314,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={() => handleExecCommand("justifyRight")}
-            title="Rata Kanan"
+            title={t("editor.alignRight")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <AlignRight className="h-3.5 w-3.5" strokeWidth={2} />
@@ -322,7 +326,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={insertLink}
-            title="Sisipkan Tautan (Link)"
+            title={t("editor.link")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <LinkIcon className="h-3.5 w-3.5" strokeWidth={2} />
@@ -331,7 +335,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={insertTable}
-            title="Sisipkan Tabel"
+            title={t("editor.table")}
             className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer"
           >
             <TableIcon className="h-3.5 w-3.5" strokeWidth={2} />
@@ -345,12 +349,12 @@ export function RichTextEditor({
             <DropdownMenuContent align="start" className="w-48">
               <DropdownMenuItem onClick={() => handleExecCommand("insertHorizontalRule")}>
                 <Minus className="h-3.5 w-3.5 mr-2" />
-                <span>Garis Pembatas</span>
+                <span>{t("editor.horizontalRule")}</span>
               </DropdownMenuItem>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
                   <Sparkles className="h-3.5 w-3.5 mr-2 text-amber-500" />
-                  <span>Simbol Khusus</span>
+                  <span>{t("editor.symbols")}</span>
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-48 p-2 grid grid-cols-4 gap-1">
                   {SPECIAL_SYMBOLS.map((sym) => (
@@ -368,16 +372,16 @@ export function RichTextEditor({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleExecCommand("subscript")}>
                 <Subscript className="h-3.5 w-3.5 mr-2" />
-                <span>Subskrip (X₂)</span>
+                <span>{t("editor.subscript")}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExecCommand("superscript")}>
                 <Superscript className="h-3.5 w-3.5 mr-2" />
-                <span>Superskrip (X²)</span>
+                <span>{t("editor.superscript")}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleExecCommand("removeFormat")} className="text-destructive">
                 <RemoveFormatting className="h-3.5 w-3.5 mr-2" />
-                <span>Hapus Format</span>
+                <span>{t("editor.clearFormat")}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -388,7 +392,7 @@ export function RichTextEditor({
         <button
           type="button"
           onClick={() => setIsFullscreen(!isFullscreen)}
-          title={isFullscreen ? "Keluar Layar Penuh" : "Mode Pengeditan Layar Penuh"}
+          title={t("editor.fullscreen")}
           className="p-1.5 rounded hover:bg-surface hover:text-ink transition-colors cursor-pointer text-primary ml-auto"
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -403,18 +407,18 @@ export function RichTextEditor({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         style={{ minHeight: isFullscreen ? "calc(100vh - 120px)" : minHeight }}
-        data-placeholder={placeholder}
+        data-placeholder={defaultPlaceholder}
         className="p-4 text-sm text-ink-secondary focus:outline-none leading-relaxed prose prose-sm max-w-none overflow-y-auto flex-1 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_h1]:text-lg [&_h1]:font-bold [&_h1]:text-ink [&_h1]:mt-4 [&_h1]:mb-2 [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-ink [&_h2]:mt-3 [&_h2]:mb-1.5 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-ink [&_h3]:mt-2.5 [&_h3]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:py-1.5 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:bg-surface-muted/50 [&_blockquote]:rounded-r-md [&_pre]:bg-surface-muted [&_pre]:p-3.5 [&_pre]:rounded-lg [&_pre]:font-mono [&_pre]:text-xs [&_pre]:my-3 [&_p]:mb-2 last:[&_p]:mb-0 [&_a]:text-primary [&_a]:underline empty:before:content-[attr(data-placeholder)] empty:before:text-ink-faint empty:before:pointer-events-none"
       />
 
       {/* Clean Status Bar Footer */}
       <div className="flex items-center justify-between px-3.5 py-1.5 bg-surface-muted/70 border-t border-hairline text-[11px] text-ink-muted select-none">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-ink-secondary">Dokumen Editor</span>
+          <span className="font-semibold text-ink-secondary">{t("editor.title")}</span>
           <span>•</span>
-          <span>{wordCount} Kata</span>
+          <span>{wordCount} {t("editor.words")}</span>
           <span>•</span>
-          <span>{charCount} Karakter</span>
+          <span>{charCount} {t("editor.characters")}</span>
         </div>
       </div>
     </div>
