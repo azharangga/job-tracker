@@ -125,7 +125,7 @@
   --ink-muted: oklch(0.48 0.008 60);
   --ink-faint: oklch(0.7 0.005 60);
 
-  --sticker-sky: oklch(0.75 0.11 240);
+  --sticker-sky: oklch(0.58 0.16 246);   /* brand primary blue #0075de */
   --sticker-purple: oklch(0.82 0.09 305);
   --sticker-pink: oklch(0.75 0.19 5);
   --sticker-orange: oklch(0.66 0.18 45);

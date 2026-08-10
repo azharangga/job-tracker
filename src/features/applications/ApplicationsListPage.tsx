@@ -19,6 +19,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   listApplications,
   listCompanies,
   createApplication,
@@ -439,18 +446,20 @@ function FilterSelect({
   options: (readonly [string, string])[];
 }) {
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-9 pl-8 pr-8 rounded-md bg-surface border border-hairline text-sm text-ink hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-ring transition-colors appearance-none cursor-pointer"
-      >
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="h-9 w-auto min-w-[140px] rounded-md bg-surface border border-hairline text-sm text-ink hover:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-primary transition-colors cursor-pointer">
+        <div className="flex items-center gap-2">
+          <Filter className="h-3.5 w-3.5 text-ink-faint shrink-0" strokeWidth={1.75} />
+          <SelectValue />
+        </div>
+      </SelectTrigger>
+      <SelectContent>
         {options.map(([v, l]) => (
-          <option key={v} value={v}>{l}</option>
+          <SelectItem key={v} value={v}>
+            {l}
+          </SelectItem>
         ))}
-      </select>
-      <Filter className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ink-faint pointer-events-none" strokeWidth={1.75} />
-      <ArrowUpDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-ink-faint pointer-events-none" strokeWidth={1.75} />
-    </div>
+      </SelectContent>
+    </Select>
   );
 }

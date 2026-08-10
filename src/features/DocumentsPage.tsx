@@ -19,6 +19,13 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -401,17 +408,21 @@ export function DocumentsPage() {
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">
               {t("documents.form.kind")}
             </label>
-            <select
+            <Select
               value={kind}
-              onChange={(e) => setKind(e.target.value as DocumentKind)}
-              className="w-full h-9 rounded-md border border-hairline bg-surface px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              onValueChange={(val) => setKind(val as DocumentKind)}
             >
-              {(Object.keys(DOCUMENT_KIND_LABELS) as DocumentKind[]).map((k) => (
-                <option key={k} value={k}>
-                  {DOCUMENT_KIND_LABELS[k]}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full h-9 rounded-md border border-hairline bg-surface px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(DOCUMENT_KIND_LABELS) as DocumentKind[]).map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {DOCUMENT_KIND_LABELS[k]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -479,17 +490,21 @@ export function DocumentsPage() {
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">
               {t("documents.form.kind")}
             </label>
-            <select
+            <Select
               value={editKind}
-              onChange={(e) => setEditKind(e.target.value as DocumentKind)}
-              className="w-full h-9 rounded-md border border-hairline bg-surface px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              onValueChange={(val) => setEditKind(val as DocumentKind)}
             >
-              {(Object.keys(DOCUMENT_KIND_LABELS) as DocumentKind[]).map((k) => (
-                <option key={k} value={k}>
-                  {DOCUMENT_KIND_LABELS[k]}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full h-9 rounded-md border border-hairline bg-surface px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(DOCUMENT_KIND_LABELS) as DocumentKind[]).map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {DOCUMENT_KIND_LABELS[k]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

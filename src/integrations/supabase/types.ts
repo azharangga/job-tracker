@@ -139,6 +139,7 @@ export type Database = {
           salary_max: number | null
           salary_min: number | null
           status: Database["public"]["Enums"]["app_status"]
+          rejected_at_stage?: string | null
           tags: string[]
           updated_at: string
           work_mode: Database["public"]["Enums"]["work_mode"] | null
@@ -164,6 +165,7 @@ export type Database = {
           position: string
           priority?: Database["public"]["Enums"]["priority"] | null
           recruiter_id?: string | null
+          rejected_at_stage?: string | null
           salary_max?: number | null
           salary_min?: number | null
           status?: Database["public"]["Enums"]["app_status"]
@@ -192,6 +194,7 @@ export type Database = {
           position?: string
           priority?: Database["public"]["Enums"]["priority"] | null
           recruiter_id?: string | null
+          rejected_at_stage?: string | null
           salary_max?: number | null
           salary_min?: number | null
           status?: Database["public"]["Enums"]["app_status"]

@@ -5,13 +5,12 @@ export type AppStatus =
   | "applied"
   | "hr_screening"
   | "technical_test"
-  | "user_interview"
   | "hr_interview"
+  | "user_interview"
   | "final_interview"
   | "offer"
   | "accepted"
-  | "rejected"
-  | "withdrawn";
+  | "rejected";
 
 export type WorkMode = "remote" | "hybrid" | "onsite";
 export type EmploymentType =
@@ -85,6 +84,7 @@ export interface Application {
   company_id: UUID | null;
   position: string;
   status: AppStatus;
+  rejected_at_stage?: AppStatus | null;
   work_mode: WorkMode | null;
   employment_type: EmploymentType | null;
   platform: string | null;

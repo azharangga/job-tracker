@@ -15,6 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   listContacts,
   listCompanies,
   createContact,
@@ -227,12 +234,22 @@ export function ContactsPage() {
             <input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder={t("contacts.form.rolePlaceholder")} className={inputCls} />
           </Field>
           <Field label={t("contacts.form.company")}>
-            <select value={form.company_id} onChange={(e) => setForm({ ...form, company_id: e.target.value })} className={inputCls}>
-              <option value="">{t("contacts.form.selectCompany")}</option>
-              {(companies.data ?? []).map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <Select
+              value={form.company_id || "_none"}
+              onValueChange={(val) => setForm({ ...form, company_id: val === "_none" ? "" : val })}
+            >
+              <SelectTrigger className={inputCls}>
+                <SelectValue placeholder={t("contacts.form.selectCompany")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_none">{t("contacts.form.selectCompany")}</SelectItem>
+                {(companies.data ?? []).map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

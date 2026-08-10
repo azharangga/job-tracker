@@ -1,8 +1,20 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { APP_STATUS_ORDER, APP_STATUS_LABELS } from "@/constants";
 import type { Company, Contact, AppStatus, WorkMode, EmploymentType, Priority } from "@/types";
+import { formatDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 export interface ApplicationFormState {
   position: string;
@@ -22,9 +34,21 @@ export interface ApplicationFormState {
   recruiter_id: string;
   tags: string;
   notes: string;
+  rejected_at_stage?: AppStatus | "";
   job_requirements?: string;
   job_description?: string;
 }
+
+const REJECTABLE_STAGES: AppStatus[] = [
+  "wishlist",
+  "applied",
+  "hr_screening",
+  "technical_test",
+  "hr_interview",
+  "user_interview",
+  "final_interview",
+  "offer",
+];
 
 interface ApplicationFormFieldsProps<T extends ApplicationFormState> {
   form: T;
@@ -53,10 +77,7 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
       {/* Row 1: Position & Company */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         <div>
-          <label className={labelCls}>
-            <span>{t("applications.form.position")}</span>
-            <span className="text-destructive ml-0.5">*</span>
-          </label>
+          <label className={labelCls}>{t("applications.form.position")}</label>
           <input
             required
             value={form.position}
@@ -68,50 +89,83 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
 
         <div>
           <label className={labelCls}>{t("applications.form.company")}</label>
-          <select
-            value={form.company_id}
-            onChange={(e) => setForm({ ...form, company_id: e.target.value })}
-            className={inputCls}
+          <Select
+            value={form.company_id || "_none"}
+            onValueChange={(val) => setForm({ ...form, company_id: val === "_none" ? "" : val })}
           >
-            <option value="">{t("applications.form.companyPlaceholder")}</option>
-            {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className={inputCls}>
+              <SelectValue placeholder={t("applications.form.companyPlaceholder")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_none">{t("applications.form.companyPlaceholder")}</SelectItem>
+              {companies.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Row 2: Status & Priority */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+      {/* Row 2: Status, Priority, (and Rejected At Stage if rejected) */}
+      <div className={cn("grid grid-cols-1 gap-3.5", form.status === "rejected" ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
         <div>
           <label className={labelCls}>{t("applications.form.status")}</label>
-          <select
+          <Select
             value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value as AppStatus })}
-            className={inputCls}
+            onValueChange={(val) => setForm({ ...form, status: val as AppStatus })}
           >
-            {APP_STATUS_ORDER.map((s) => (
-              <option key={s} value={s}>
-                {APP_STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className={inputCls}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {APP_STATUS_ORDER.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {APP_STATUS_LABELS[s]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+
+        {form.status === "rejected" && (
+          <div>
+            <label className={labelCls}>{t("applications.form.rejectedAtStage", { defaultValue: "Ditolak Pada Tahap" })}</label>
+            <Select
+              value={form.rejected_at_stage || "applied"}
+              onValueChange={(val) => setForm({ ...form, rejected_at_stage: val as AppStatus })}
+            >
+              <SelectTrigger className={inputCls}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {REJECTABLE_STAGES.map((st) => (
+                  <SelectItem key={st} value={st}>
+                    {APP_STATUS_LABELS[st]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div>
           <label className={labelCls}>{t("applications.form.priority")}</label>
-          <select
-            value={form.priority}
-            onChange={(e) => setForm({ ...form, priority: e.target.value as Priority | "" })}
-            className={inputCls}
+          <Select
+            value={form.priority || "_none"}
+            onValueChange={(val) => setForm({ ...form, priority: (val === "_none" ? "" : val) as Priority | "" })}
           >
-            <option value="">{t("applications.form.selectPriority")}</option>
-            <option value="high">{t("applications.form.priorityHigh")}</option>
-            <option value="medium">{t("applications.form.priorityMedium")}</option>
-            <option value="low">{t("applications.form.priorityLow")}</option>
-          </select>
+            <SelectTrigger className={inputCls}>
+              <SelectValue placeholder={t("applications.form.selectPriority")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_none">{t("applications.form.selectPriority")}</SelectItem>
+              <SelectItem value="high">{t("applications.form.priorityHigh")}</SelectItem>
+              <SelectItem value="medium">{t("applications.form.priorityMedium")}</SelectItem>
+              <SelectItem value="low">{t("applications.form.priorityLow")}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -119,31 +173,39 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <div>
           <label className={labelCls}>{t("applications.form.mode")}</label>
-          <select
-            value={form.work_mode}
-            onChange={(e) => setForm({ ...form, work_mode: e.target.value as WorkMode | "" })}
-            className={inputCls}
+          <Select
+            value={form.work_mode || "_none"}
+            onValueChange={(val) => setForm({ ...form, work_mode: (val === "_none" ? "" : val) as WorkMode | "" })}
           >
-            <option value="">{t("applications.form.selectMode")}</option>
-            <option value="remote">{t("applications.remote")}</option>
-            <option value="hybrid">{t("applications.hybrid")}</option>
-            <option value="onsite">{t("applications.onsite")}</option>
-          </select>
+            <SelectTrigger className={inputCls}>
+              <SelectValue placeholder={t("applications.form.selectMode")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_none">{t("applications.form.selectMode")}</SelectItem>
+              <SelectItem value="remote">{t("applications.remote")}</SelectItem>
+              <SelectItem value="hybrid">{t("applications.hybrid")}</SelectItem>
+              <SelectItem value="onsite">{t("applications.onsite")}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
           <label className={labelCls}>{t("applications.form.jobType")}</label>
-          <select
-            value={form.employment_type}
-            onChange={(e) => setForm({ ...form, employment_type: e.target.value as EmploymentType | "" })}
-            className={inputCls}
+          <Select
+            value={form.employment_type || "_none"}
+            onValueChange={(val) => setForm({ ...form, employment_type: (val === "_none" ? "" : val) as EmploymentType | "" })}
           >
-            <option value="">{t("applications.form.selectJobType")}</option>
-            <option value="full_time">{t("applications.form.jobTypeFullTime")}</option>
-            <option value="part_time">{t("applications.form.jobTypePartTime")}</option>
-            <option value="contract">{t("applications.form.jobTypeContract")}</option>
-            <option value="internship">{t("applications.form.jobTypeInternship")}</option>
-          </select>
+            <SelectTrigger className={inputCls}>
+              <SelectValue placeholder={t("applications.form.selectJobType")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_none">{t("applications.form.selectJobType")}</SelectItem>
+              <SelectItem value="full_time">{t("applications.form.jobTypeFullTime")}</SelectItem>
+              <SelectItem value="part_time">{t("applications.form.jobTypePartTime")}</SelectItem>
+              <SelectItem value="contract">{t("applications.form.jobTypeContract")}</SelectItem>
+              <SelectItem value="internship">{t("applications.form.jobTypeInternship")}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
@@ -183,20 +245,24 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
 
         <div>
           <label className={labelCls}>{t("applications.form.currency")}</label>
-          <select
-            value={form.currency}
-            onChange={(e) => setForm({ ...form, currency: e.target.value })}
-            className={inputCls}
+          <Select
+            value={form.currency || "IDR"}
+            onValueChange={(val) => setForm({ ...form, currency: val })}
           >
-            <option value="IDR">IDR (Rp)</option>
-            <option value="USD">USD ($)</option>
-            <option value="SGD">SGD (S$)</option>
-            <option value="EUR">EUR (€)</option>
-          </select>
+            <SelectTrigger className={inputCls}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="IDR">IDR (Rp)</SelectItem>
+              <SelectItem value="USD">USD ($)</SelectItem>
+              <SelectItem value="SGD">SGD (S$)</SelectItem>
+              <SelectItem value="EUR">EUR (€)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Row 5: Platform & Deadline */}
+      {/* Row 5: Platform & Deadline (shadcn DatePicker) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         <div>
           <label className={labelCls}>{t("applications.form.platform")}</label>
@@ -210,17 +276,41 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
 
         <div>
           <label className={labelCls}>{t("applications.form.deadline")}</label>
-          <input
-            type="date"
-            value={form.deadline ? form.deadline.split("T")[0] : ""}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                deadline: e.target.value ? new Date(e.target.value).toISOString() : "",
-              })
-            }
-            className={inputCls}
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  inputCls,
+                  "flex items-center justify-between text-left font-normal cursor-pointer",
+                  !form.deadline && "text-ink-faint"
+                )}
+              >
+                <span>
+                  {form.deadline
+                    ? formatDate(form.deadline)
+                    : t("applications.form.deadlinePlaceholder", { defaultValue: "dd/mm/yyyy" })}
+                </span>
+                <CalendarIcon className="h-4 w-4 text-ink-faint shrink-0" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={form.deadline ? new Date(form.deadline) : undefined}
+                onSelect={(date) => {
+                  setForm({
+                    ...form,
+                    deadline: date ? date.toISOString() : "",
+                  });
+                }}
+                captionLayout="dropdown"
+                startMonth={new Date(2020, 0)}
+                endMonth={new Date(2035, 11)}
+                fixedWeeks
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -253,18 +343,22 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         <div>
           <label className={labelCls}>{t("applications.form.recruiter")}</label>
-          <select
-            value={form.recruiter_id}
-            onChange={(e) => setForm({ ...form, recruiter_id: e.target.value })}
-            className={inputCls}
+          <Select
+            value={form.recruiter_id || "_none"}
+            onValueChange={(val) => setForm({ ...form, recruiter_id: val === "_none" ? "" : val })}
           >
-            <option value="">{t("applications.form.recruiterPlaceholder")}</option>
-            {contacts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.role || "Contact"})
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className={inputCls}>
+              <SelectValue placeholder={t("applications.form.recruiterPlaceholder")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_none">{t("applications.form.recruiterPlaceholder")}</SelectItem>
+              {contacts.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name} ({c.role || "Contact"})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>

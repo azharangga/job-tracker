@@ -14,8 +14,8 @@ type StickerColor =
 
 const map: Record<StickerColor, { bg: string; text: string; dot: string }> = {
   sky: {
-    bg: "bg-sticker-sky/15",
-    text: "text-sticker-sky",
+    bg: "bg-sticker-sky/12",
+    text: "text-sticker-sky font-semibold",
     dot: "bg-sticker-sky",
   },
   purple: {

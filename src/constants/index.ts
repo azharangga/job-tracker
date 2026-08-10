@@ -16,13 +16,12 @@ export const APP_STATUS_ORDER: AppStatus[] = [
   "applied",
   "hr_screening",
   "technical_test",
-  "user_interview",
   "hr_interview",
+  "user_interview",
   "final_interview",
   "offer",
   "accepted",
   "rejected",
-  "withdrawn",
 ];
 
 export const APP_STATUS_LABELS: Record<AppStatus, string> = {
@@ -30,13 +29,12 @@ export const APP_STATUS_LABELS: Record<AppStatus, string> = {
   applied: "Applied",
   hr_screening: "HR Screening",
   technical_test: "Technical Test",
-  user_interview: "User Interview",
   hr_interview: "HR Interview",
+  user_interview: "User Interview",
   final_interview: "Final Interview",
-  offer: "Offer",
+  offer: "Offering",
   accepted: "Accepted",
   rejected: "Rejected",
-  withdrawn: "Withdrawn",
 };
 
 // dot / bg / text token names for sticker palette
@@ -51,10 +49,9 @@ export const APP_STATUS_STICKER: Record<
   user_interview: "orange",  // oranye – interview user
   hr_interview: "orange",    // oranye – interview HR
   final_interview: "pink",   // pink – tahap akhir interview
-  offer: "amber",            // amber/kuning – dapat penawaran
+  offer: "green",            // hijau – penawaran kerja ✅
   accepted: "green",         // hijau – diterima ✅
   rejected: "red",           // merah – ditolak ❌
-  withdrawn: "muted",        // abu-abu – mengundurkan diri
 };
 
 export const APP_ACTIVE_STATUSES: AppStatus[] = [

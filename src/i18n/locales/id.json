@@ -144,8 +144,11 @@
     "backToList": "Kembali ke Lamaran",
     "jobPosting": "Tautan lowongan",
     "careerPage": "Halaman karir",
-    "linked": "Terhubung",
+    "link": "Link",
     "appliedLabel": "Dilamar {{date}}",
+    "vacancyStatus": "Status Lowongan",
+    "statusOpen": "Open",
+    "statusClosed": "Closed",
     "checklist": {
       "title": "Checklist",
       "empty": "Tidak ada item checklist."
@@ -178,7 +181,11 @@
       "subtitle": "Proses Rekrutmen",
       "completed": "Selesai",
       "pending": "Tertunda",
-      "passed": "Terlewati"
+      "passed": "Terlewati",
+      "inProgress": "Sedang Berlangsung",
+      "offered": "Penawaran Kerja",
+      "accepted": "Diterima",
+      "rejected": "Ditolak"
     },
     "form": {
       "position": "Posisi",
@@ -190,6 +197,7 @@
       "mode": "Mode Kerja",
       "selectMode": "Pilih mode kerja...",
       "status": "Status",
+      "rejectedAtStage": "Ditolak pada tahap",
       "editTitle": "Sunting Lamaran",
       "priority": "Prioritas",
       "selectPriority": "Pilih prioritas...",

@@ -157,8 +157,11 @@
     "backToList": "Back to Applications",
     "jobPosting": "Job posting",
     "careerPage": "Career page",
-    "linked": "Linked",
+    "link": "Link",
     "appliedLabel": "Applied {{date}}",
+    "vacancyStatus": "Vacancy Status",
+    "statusOpen": "Open",
+    "statusClosed": "Closed",
     "checklist": {
       "title": "Checklist",
       "empty": "No checklist items."
@@ -191,7 +194,11 @@
       "subtitle": "Recruitment progress",
       "completed": "Completed",
       "pending": "Pending",
-      "passed": "Passed"
+      "passed": "Passed",
+      "inProgress": "In Progress",
+      "offered": "Job Offer",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
     },
     "form": {
       "position": "Position",
@@ -203,6 +210,7 @@
       "mode": "Work mode",
       "selectMode": "Select work mode...",
       "status": "Status",
+      "rejectedAtStage": "Rejected at stage",
       "editTitle": "Edit Application",
       "priority": "Priority",
       "selectPriority": "Select priority...",
