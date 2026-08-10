@@ -51,6 +51,12 @@ export function ApplicationDetailPage({ id }: { id: string }) {
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
+  // Inline edit state
+  const [editingJobReq, setEditingJobReq] = useState(false);
+  const [jobReqDraft, setJobReqDraft] = useState("");
+  const [editingJobDesc, setEditingJobDesc] = useState(false);
+  const [jobDescDraft, setJobDescDraft] = useState("");
+
   // Edit Form State
   const [form, setForm] = useState({
     position: "",
@@ -70,6 +76,8 @@ export function ApplicationDetailPage({ id }: { id: string }) {
     recruiter_id: "",
     tags: "",
     notes: "",
+    job_requirements: "",
+    job_description: "",
   });
 
   // Pre-populate form when dialog opens
@@ -94,6 +102,8 @@ export function ApplicationDetailPage({ id }: { id: string }) {
         recruiter_id: a.recruiter_id || "",
         tags: a.tags ? a.tags.join(", ") : "",
         notes: a.notes || "",
+        job_requirements: a.job_requirements || "",
+        job_description: a.job_description || "",
       });
     }
   }, [app.data, openEdit]);
@@ -148,6 +158,8 @@ export function ApplicationDetailPage({ id }: { id: string }) {
       recruiter_id: form.recruiter_id || null,
       tags: tagsArray,
       notes: form.notes || null,
+      job_requirements: form.job_requirements || null,
+      job_description: form.job_description || null,
     });
   };
 
@@ -263,22 +275,110 @@ export function ApplicationDetailPage({ id }: { id: string }) {
         </div>
       </motion.div>
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Timeline */}
-        <div className="lg:col-span-2 rounded-lg bg-surface border border-hairline p-5 shadow-soft">
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+
+        {/* KIRI: Job Requirements + Job Description — atas bawah, lebar 2/3 */}
+        <div className="lg:col-span-2 space-y-4">
+
+          {/* Job Requirements */}
+          <div className="rounded-lg bg-surface border border-hairline p-5 shadow-soft">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-eyebrow text-ink-muted">{t("applications.jobRequirements.title")}</div>
+              {!editingJobReq && (
+                <button
+                  onClick={() => { setJobReqDraft(a.job_requirements || ""); setEditingJobReq(true); }}
+                  className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink transition-colors px-2 py-1 rounded-md hover:bg-surface-muted"
+                >
+                  <Pencil className="h-3 w-3" /> {t("applications.jobRequirements.edit")}
+                </button>
+              )}
+            </div>
+            {editingJobReq ? (
+              <div className="space-y-2">
+                <textarea
+                  autoFocus value={jobReqDraft}
+                  onChange={(e) => setJobReqDraft(e.target.value)}
+                  placeholder={t("applications.jobRequirements.placeholder")}
+                  className="w-full min-h-[200px] rounded-md border border-hairline bg-surface p-3 text-sm text-ink-secondary focus:outline-none focus:ring-1 focus:ring-primary resize-y leading-relaxed"
+                />
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => setEditingJobReq(false)} className="text-xs px-3 py-1.5 rounded-md border border-hairline text-ink-muted hover:bg-muted transition-colors">{t("applications.jobRequirements.cancel")}</button>
+                  <button
+                    onClick={async () => { await updateMut.mutateAsync({ job_requirements: jobReqDraft || null }); setEditingJobReq(false); }}
+                    disabled={updateMut.isPending}
+                    className="text-xs px-3 py-1.5 rounded-md bg-primary text-white hover:bg-primary-active transition-colors disabled:opacity-50"
+                  >{updateMut.isPending ? t("applications.jobRequirements.saving") : t("applications.jobRequirements.save")}</button>
+                </div>
+              </div>
+            ) : a.job_requirements ? (
+              <p className="text-sm text-ink-secondary whitespace-pre-wrap leading-relaxed">{a.job_requirements}</p>
+            ) : (
+              <button
+                onClick={() => { setJobReqDraft(""); setEditingJobReq(true); }}
+                className="w-full py-10 border-2 border-dashed border-hairline rounded-lg text-sm text-ink-muted hover:border-ink-muted/50 hover:text-ink hover:bg-surface-muted/60 transition-all flex flex-col items-center gap-1.5"
+              >
+                <Pencil className="h-4 w-4" />
+                <span>{t("applications.jobRequirements.add")}</span>
+                <span className="text-xs">{t("applications.jobRequirements.addHint")}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Job Description */}
+          <div className="rounded-lg bg-surface border border-hairline p-5 shadow-soft">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-eyebrow text-ink-muted">{t("applications.jobDescription.title")}</div>
+              {!editingJobDesc && (
+                <button
+                  onClick={() => { setJobDescDraft(a.job_description || ""); setEditingJobDesc(true); }}
+                  className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink transition-colors px-2 py-1 rounded-md hover:bg-surface-muted"
+                >
+                  <Pencil className="h-3 w-3" /> {t("applications.jobDescription.edit")}
+                </button>
+              )}
+            </div>
+            {editingJobDesc ? (
+              <div className="space-y-2">
+                <textarea
+                  autoFocus value={jobDescDraft}
+                  onChange={(e) => setJobDescDraft(e.target.value)}
+                  placeholder={t("applications.jobDescription.placeholder")}
+                  className="w-full min-h-[200px] rounded-md border border-hairline bg-surface p-3 text-sm text-ink-secondary focus:outline-none focus:ring-1 focus:ring-primary resize-y leading-relaxed"
+                />
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => setEditingJobDesc(false)} className="text-xs px-3 py-1.5 rounded-md border border-hairline text-ink-muted hover:bg-muted transition-colors">{t("applications.jobDescription.cancel")}</button>
+                  <button
+                    onClick={async () => { await updateMut.mutateAsync({ job_description: jobDescDraft || null }); setEditingJobDesc(false); }}
+                    disabled={updateMut.isPending}
+                    className="text-xs px-3 py-1.5 rounded-md bg-primary text-white hover:bg-primary-active transition-colors disabled:opacity-50"
+                  >{updateMut.isPending ? t("applications.jobDescription.saving") : t("applications.jobDescription.save")}</button>
+                </div>
+              </div>
+            ) : a.job_description ? (
+              <p className="text-sm text-ink-secondary whitespace-pre-wrap leading-relaxed">{a.job_description}</p>
+            ) : (
+              <button
+                onClick={() => { setJobDescDraft(""); setEditingJobDesc(true); }}
+                className="w-full py-10 border-2 border-dashed border-hairline rounded-lg text-sm text-ink-muted hover:border-ink-muted/50 hover:text-ink hover:bg-surface-muted/60 transition-all flex flex-col items-center gap-1.5"
+              >
+                <Pencil className="h-4 w-4" />
+                <span>{t("applications.jobDescription.add")}</span>
+                <span className="text-xs">{t("applications.jobDescription.addHint")}</span>
+              </button>
+            )}
+          </div>
+
+        </div>
+
+        {/* KANAN: Timeline — sempit 1/3 */}
+        <div className="lg:col-span-1 rounded-lg bg-surface border border-hairline p-5 shadow-soft">
           <div className="text-eyebrow text-ink-muted">{t("applications.timeline.title")}</div>
           <div className="text-title text-ink mt-1 mb-4">{t("applications.timeline.subtitle")}</div>
           <ol className="relative pl-1">
             {(() => {
               const SEQUENTIAL_STAGES: AppStatus[] = [
-                "wishlist",
-                "applied",
-                "hr_screening",
-                "technical_test",
-                "user_interview",
-                "hr_interview",
-                "final_interview",
-                "offer",
+                "wishlist", "applied", "hr_screening", "technical_test",
+                "user_interview", "hr_interview", "final_interview", "offer",
               ];
               const isTerminal = !SEQUENTIAL_STAGES.includes(a.status);
               const stagesToRender = isTerminal ? [...SEQUENTIAL_STAGES, a.status] : SEQUENTIAL_STAGES;
@@ -289,19 +389,12 @@ export function ApplicationDetailPage({ id }: { id: string }) {
                 const currentIdx = stagesToRender.indexOf(a.status);
                 const isPastStage = currentIdx !== -1 && stageIdx < currentIdx;
 
-                // Determine state: completed, active (current progress), rejected (stopped), future (skipped/pending)
                 const state =
                   stage === a.status
-                    ? a.status === "rejected" || a.status === "withdrawn"
-                      ? "rejected"
-                      : a.status === "accepted"
-                      ? "completed"
-                      : "active"
-                    : entry || isPastStage
-                    ? "completed"
-                    : "future";
+                    ? a.status === "rejected" || a.status === "withdrawn" ? "rejected"
+                      : a.status === "accepted" ? "completed" : "active"
+                    : entry || isPastStage ? "completed" : "future";
 
-                // Line logic: Green if connecting two completed/active stages, otherwise grey
                 const nextStage = stagesToRender[stageIdx + 1];
                 const nextStageIdx = stageIdx + 1;
                 const nextIsActiveOrCompleted = nextStage && (nextStageIdx <= currentIdx || !!nextStage);
@@ -309,59 +402,42 @@ export function ApplicationDetailPage({ id }: { id: string }) {
 
                 return (
                   <li key={stage} className="relative pl-6 pb-5 last:pb-0">
-                    {/* Vertical connector line */}
                     {!isLast && (
-                      <span
-                        className={cn(
-                          "absolute left-[6px] top-3 h-full w-[2px] transition-colors duration-200",
-                          lineIsGreen ? "bg-success" : "bg-hairline"
-                        )}
-                      />
+                      <span className={cn("absolute left-[6px] top-3 h-full w-[2px] transition-colors duration-200", lineIsGreen ? "bg-success" : "bg-hairline")} />
                     )}
-                    {/* Dot */}
-                    <span
-                      className={cn(
-                        "absolute left-0 top-1 h-3.5 w-3.5 rounded-full ring-4 ring-surface flex items-center justify-center transition-all duration-200",
-                        state === "active" && "bg-primary ring-primary/20",
-                        state === "completed" && "bg-success ring-success/10",
-                        state === "rejected" && "bg-destructive ring-destructive/20",
-                        state === "future" && "bg-hairline"
-                      )}
-                    />
+                    <span className={cn(
+                      "absolute left-0 top-1 h-3.5 w-3.5 rounded-full ring-4 ring-surface flex items-center justify-center transition-all duration-200",
+                      state === "active" && "bg-primary ring-primary/20",
+                      state === "completed" && "bg-success ring-success/10",
+                      state === "rejected" && "bg-destructive ring-destructive/20",
+                      state === "future" && "bg-hairline"
+                    )} />
                     <div className="flex items-center justify-between gap-3 min-w-0">
                       <div className="min-w-0">
-                        <div
-                          className={cn(
-                            "text-sm font-medium transition-colors",
-                            state === "active" && "text-primary font-semibold",
-                            state === "completed" && "text-ink font-semibold",
-                            state === "rejected" && "text-destructive font-semibold",
-                            state === "future" && "text-ink-faint"
-                          )}
-                        >
+                        <div className={cn(
+                          "text-sm font-medium transition-colors",
+                          state === "active" && "text-primary font-semibold",
+                          state === "completed" && "text-ink font-semibold",
+                          state === "rejected" && "text-destructive font-semibold",
+                          state === "future" && "text-ink-faint"
+                        )}>
                           {APP_STATUS_LABELS[stage]}
                         </div>
                         {entry?.notes && !entry.notes.startsWith("Moved to") && !entry.notes.startsWith("Pindah ke") && (
                           <div className="text-xs text-ink-muted mt-0.5 break-words">{entry.notes}</div>
                         )}
                       </div>
-                      <div
-                        className={cn(
-                          "text-xs tabular-nums shrink-0 transition-colors",
-                          state === "active" && "text-primary font-medium",
-                          state === "completed" && "text-ink-secondary",
-                          state === "rejected" && "text-destructive font-medium",
-                          state === "future" && "text-ink-faint"
-                        )}
-                      >
-                        {entry
-                          ? formatDate(entry.occurred_at)
-                          : stage === a.status && a.applied_at
-                          ? formatDate(a.applied_at)
-                          : isPastStage
-                          ? t("applications.timeline.passed")
-                          : state === "completed"
-                          ? t("applications.timeline.completed")
+                      <div className={cn(
+                        "text-xs tabular-nums shrink-0 transition-colors",
+                        state === "active" && "text-primary font-medium",
+                        state === "completed" && "text-ink-secondary",
+                        state === "rejected" && "text-destructive font-medium",
+                        state === "future" && "text-ink-faint"
+                      )}>
+                        {entry ? formatDate(entry.occurred_at)
+                          : stage === a.status && a.applied_at ? formatDate(a.applied_at)
+                          : isPastStage ? t("applications.timeline.passed")
+                          : state === "completed" ? t("applications.timeline.completed")
                           : t("applications.timeline.pending")}
                       </div>
                     </div>
@@ -372,41 +448,6 @@ export function ApplicationDetailPage({ id }: { id: string }) {
           </ol>
         </div>
 
-        {/* Sidebar: Checklist + Activity */}
-        <div className="space-y-4">
-          <div className="rounded-lg bg-surface border border-hairline p-5 shadow-soft">
-            <div className="text-eyebrow text-ink-muted mb-2">{t("applications.checklist.title")}</div>
-            {(checklist.data ?? []).length === 0 ? (
-              <p className="text-sm text-ink-muted">{t("applications.checklist.empty")}</p>
-            ) : (
-              <ul className="space-y-2">
-                {checklist.data!.map((c) => (
-                  <li key={c.id} className="flex items-start gap-2.5">
-                    <div className={`mt-0.5 h-4 w-4 shrink-0 rounded border-2 grid place-items-center ${c.done ? "bg-sticker-green border-sticker-green" : "border-ink-faint"}`}>
-                      {c.done && <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" clipRule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-4-4a1 1 0 111.4-1.4L8 12.6l7.3-7.3a1 1 0 011.4 0z" /></svg>}
-                    </div>
-                    <span className={`text-sm ${c.done ? "text-ink-muted line-through" : "text-ink-secondary"}`}>{c.label}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="rounded-lg bg-surface border border-hairline p-5 shadow-soft">
-            <div className="text-eyebrow text-ink-muted mb-2">{t("applications.activity.title")}</div>
-            <ul className="space-y-2">
-              {(activities.data ?? []).slice(0, 8).map((act) => (
-                <li key={act.id} className="flex items-start gap-2.5 text-sm">
-                  <span className={`mt-1.5 h-1.5 w-1.5 rounded-full bg-sticker-${APP_STATUS_STICKER[a.status]}`} />
-                  <div>
-                    <div className="text-ink-secondary">{act.type.replace(/_/g, " ")}</div>
-                    <div className="text-xs text-ink-faint">{formatRelative(act.created_at)}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
       </div>
 
       {a.notes && (
@@ -630,6 +671,26 @@ export function ApplicationDetailPage({ id }: { id: string }) {
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               className="w-full h-20 rounded-md border border-hairline bg-surface p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
               placeholder={t("applications.form.notesPlaceholder")}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-ink-secondary mb-1.5">Job Requirements</label>
+            <textarea
+              value={form.job_requirements}
+              onChange={(e) => setForm({ ...form, job_requirements: e.target.value })}
+              className="w-full h-28 rounded-md border border-hairline bg-surface p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-y"
+              placeholder="Kualifikasi, keahlian, pengalaman yang dibutuhkan..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-ink-secondary mb-1.5">Job Description</label>
+            <textarea
+              value={form.job_description}
+              onChange={(e) => setForm({ ...form, job_description: e.target.value })}
+              className="w-full h-28 rounded-md border border-hairline bg-surface p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-y"
+              placeholder="Paste job description, tanggung jawab posisi..."
             />
           </div>
         </div>

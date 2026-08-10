@@ -102,6 +102,8 @@ export interface Application {
   portfolio_document_id: UUID | null;
   location: string | null;
   notes: string | null;
+  job_requirements: string | null;
+  job_description: string | null;
   tags: string[];
   created_at: string;
   updated_at: string;

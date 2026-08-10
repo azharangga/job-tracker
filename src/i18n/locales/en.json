@@ -166,6 +166,26 @@
     "activity": {
       "title": "Activity"
     },
+    "jobRequirements": {
+      "title": "JOB REQUIREMENTS",
+      "edit": "Edit",
+      "add": "Add job requirements",
+      "addHint": "Qualifications, skills, and experience needed",
+      "placeholder": "Qualifications, skills, experience needed...",
+      "saving": "Saving...",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "jobDescription": {
+      "title": "JOB DESCRIPTION",
+      "edit": "Edit",
+      "add": "Add job description",
+      "addHint": "Paste responsibilities, requirements, etc.",
+      "placeholder": "Paste job description, responsibilities...",
+      "saving": "Saving...",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
     "timeline": {
       "title": "Timeline",
       "subtitle": "Recruitment progress",

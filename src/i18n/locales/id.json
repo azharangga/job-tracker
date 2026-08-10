@@ -153,6 +153,26 @@
     "activity": {
       "title": "Aktivitas"
     },
+    "jobRequirements": {
+      "title": "PERSYARATAN PEKERJAAN",
+      "edit": "Ubah",
+      "add": "Tambah persyaratan pekerjaan",
+      "addHint": "Kualifikasi, keahlian, pengalaman yang dibutuhkan",
+      "placeholder": "Kualifikasi, keahlian, pengalaman yang dibutuhkan...",
+      "saving": "Menyimpan...",
+      "save": "Simpan",
+      "cancel": "Batal"
+    },
+    "jobDescription": {
+      "title": "DESKRIPSI PEKERJAAN",
+      "edit": "Ubah",
+      "add": "Tambah deskripsi pekerjaan",
+      "addHint": "Tempel tanggung jawab, persyaratan, dll.",
+      "placeholder": "Tempel deskripsi pekerjaan, tanggung jawab posisi...",
+      "saving": "Menyimpan...",
+      "save": "Simpan",
+      "cancel": "Batal"
+    },
     "timeline": {
       "title": "Timeline",
       "subtitle": "Proses Rekrutmen",
