@@ -42,19 +42,19 @@ export const APP_STATUS_LABELS: Record<AppStatus, string> = {
 // dot / bg / text token names for sticker palette
 export const APP_STATUS_STICKER: Record<
   AppStatus,
-  "sky" | "purple" | "pink" | "orange" | "teal" | "green" | "brown" | "muted"
+  "sky" | "purple" | "pink" | "orange" | "teal" | "green" | "brown" | "red" | "amber" | "muted"
 > = {
-  wishlist: "teal",
-  applied: "sky",
-  hr_screening: "teal",
-  technical_test: "orange",
-  user_interview: "orange",
-  hr_interview: "orange",
-  final_interview: "pink",
-  offer: "green",
-  accepted: "green",
-  rejected: "brown",
-  withdrawn: "muted",
+  wishlist: "muted",         // abu-abu – belum dilamar
+  applied: "sky",            // biru – sudah apply
+  hr_screening: "purple",   // ungu – masuk proses
+  technical_test: "orange",  // oranye – test teknis
+  user_interview: "orange",  // oranye – interview user
+  hr_interview: "orange",    // oranye – interview HR
+  final_interview: "pink",   // pink – tahap akhir interview
+  offer: "amber",            // amber/kuning – dapat penawaran
+  accepted: "green",         // hijau – diterima ✅
+  rejected: "red",           // merah – ditolak ❌
+  withdrawn: "muted",        // abu-abu – mengundurkan diri
 };
 
 export const APP_ACTIVE_STATUSES: AppStatus[] = [

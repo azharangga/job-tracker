@@ -8,6 +8,8 @@ type StickerColor =
   | "teal"
   | "green"
   | "brown"
+  | "red"
+  | "amber"
   | "muted";
 
 const map: Record<StickerColor, { bg: string; text: string; dot: string }> = {
@@ -45,6 +47,16 @@ const map: Record<StickerColor, { bg: string; text: string; dot: string }> = {
     bg: "bg-sticker-brown/15",
     text: "text-sticker-brown",
     dot: "bg-sticker-brown",
+  },
+  red: {
+    bg: "bg-sticker-red/12",
+    text: "text-sticker-red",
+    dot: "bg-sticker-red",
+  },
+  amber: {
+    bg: "bg-sticker-amber/15",
+    text: "text-sticker-amber",
+    dot: "bg-sticker-amber",
   },
   muted: {
     bg: "bg-muted",
