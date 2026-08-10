@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -33,7 +35,7 @@ import {
   listContacts,
 } from "@/services";
 import { formatDate, formatCurrency } from "@/lib/format";
-import { APP_STATUS_LABELS, APP_STATUS_ORDER, WORK_MODE_LABELS } from "@/constants";
+import { APP_STATUS_LABELS, APP_STATUS_ORDER, WORK_MODE_LABELS, EMPLOYMENT_TYPE_LABELS } from "@/constants";
 import type { AppStatus, WorkMode, EmploymentType, Priority, Application } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -75,6 +77,7 @@ export function ApplicationsListPage() {
     recruiter_id: "",
     tags: "",
     notes: "",
+    rejected_at_stage: "" as AppStatus | "",
   });
 
   const createMut = useMutation({
@@ -88,6 +91,7 @@ export function ApplicationsListPage() {
         position: form.position,
         company_id: form.company_id || null,
         status: form.status,
+        rejected_at_stage: form.status === "rejected" ? (form.rejected_at_stage || "applied") as AppStatus : null,
         work_mode: (form.work_mode || null) as WorkMode | null,
         employment_type: (form.employment_type || null) as EmploymentType | null,
         platform: form.platform || null,
@@ -124,6 +128,7 @@ export function ApplicationsListPage() {
         recruiter_id: "",
         tags: "",
         notes: "",
+        rejected_at_stage: "" as AppStatus | "",
       });
       setOpenCreate(false);
       void qc.invalidateQueries({ queryKey: ["applications"] });
@@ -154,7 +159,7 @@ export function ApplicationsListPage() {
         const term = q.toLowerCase();
         if (
           !a.position.toLowerCase().includes(term) &&
-          !a.company?.name.toLowerCase().includes(term) &&
+          !a.company?.name?.toLowerCase().includes(term) &&
           !(a.platform ?? "").toLowerCase().includes(term)
         )
           return false;
@@ -180,7 +185,7 @@ export function ApplicationsListPage() {
         actions={
           <button
             onClick={() => setOpenCreate(true)}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors cursor-pointer shadow-soft"
           >
             <Plus className="h-4 w-4" strokeWidth={2} />
             <span className="hidden sm:inline">{t("applications.new")}</span>
@@ -191,12 +196,12 @@ export function ApplicationsListPage() {
       {/* Filter bar */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] sm:min-w-[240px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint" strokeWidth={1.75} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint pointer-events-none" strokeWidth={1.75} />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t("applications.searchPlaceholder")}
-            className="w-full h-9 pl-9 pr-3 rounded-md bg-surface border border-hairline text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
+            className="w-full h-9 pl-9 pr-3 rounded-md bg-surface border border-hairline text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
           />
         </div>
         <FilterSelect
@@ -234,11 +239,12 @@ export function ApplicationsListPage() {
         <>
           {/* Desktop table */}
           <div className="hidden md:block rounded-lg bg-surface border border-hairline shadow-soft overflow-hidden">
-            <div className="grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1.2fr_32px] gap-4 px-5 py-3 border-b border-hairline bg-surface-muted/50 text-eyebrow text-ink-muted">
+            <div className="grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1.1fr_1.2fr_32px] gap-4 px-5 py-3 border-b border-hairline bg-surface-muted/50 text-eyebrow text-ink-muted">
               <span>#</span>
               <span>{t("applications.positionCompany")}</span>
               <span>{t("applications.status")}</span>
-              <span>{t("applications.mode")}</span>
+              <span>{t("applications.workModeHeader", { defaultValue: "WORK MODE" })}</span>
+              <span>{t("applications.jobTypeHeader", { defaultValue: "JOB TYPE" })}</span>
               <span>{t("applications.jobPosting")}</span>
               <span></span>
             </div>
@@ -256,9 +262,7 @@ export function ApplicationsListPage() {
                   >
                     <Link
                       href={`/applications/${a.id}`}
-                      className={cn(
-                        "grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1.2fr_32px] items-center gap-4 px-5 py-3.5 hover:bg-surface-muted/50 transition-colors",
-                      )}
+                      className="grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1.1fr_1.2fr_32px] items-center gap-4 px-5 py-3.5 hover:bg-surface-muted/50 transition-colors"
                     >
                       <span className="text-xs font-semibold text-ink-muted tabular-nums">{(page - 1) * pageSize + i + 1}</span>
                       <div className="flex items-center gap-3 min-w-0">
@@ -286,6 +290,7 @@ export function ApplicationsListPage() {
                       </div>
                       <div><StatusBadge status={a.status} /></div>
                       <div className="text-sm text-ink-secondary">{a.work_mode ? WORK_MODE_LABELS[a.work_mode] : "-"}</div>
+                      <div className="text-sm text-ink-secondary">{a.employment_type ? EMPLOYMENT_TYPE_LABELS[a.employment_type] : "-"}</div>
                       <div className="text-sm">
                         {a.job_url || a.career_url ? (
                           <a
@@ -357,6 +362,7 @@ export function ApplicationsListPage() {
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
                       <StatusBadge status={a.status} />
                       {a.work_mode && <span className="text-[11px] text-ink-muted">· {WORK_MODE_LABELS[a.work_mode]}</span>}
+                      {a.employment_type && <span className="text-[11px] text-ink-muted">· {EMPLOYMENT_TYPE_LABELS[a.employment_type]}</span>}
                       {a.applied_at && <span className="text-[11px] text-ink-faint">· {formatDate(a.applied_at, "MMM d")}</span>}
                     </div>
                   </Link>
