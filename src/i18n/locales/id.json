@@ -289,8 +289,8 @@
     "form": {
       "title": "Judul",
       "titlePlaceholder": "Contoh: Persiapan wawancara, Pertanyaan untuk HR",
-      "content": "Isi (Markdown)",
-      "contentPlaceholder": "Tulis catatan Anda di sini (mendukung Markdown)..."
+      "content": "Isi Catatan",
+      "contentPlaceholder": "Tulis catatan Anda di sini..."
     },
     "created": "Catatan ditambahkan",
     "deleted": "Catatan dihapus"

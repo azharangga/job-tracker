@@ -13,6 +13,7 @@ import { StickerBadge } from "@/components/common/StickerBadge";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ApplicationFormFields } from "@/features/applications/ApplicationFormFields";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -357,11 +358,11 @@ export function ApplicationDetailPage({ id }: { id: string }) {
             </div>
             {editingJobReq ? (
               <div className="space-y-2">
-                <textarea
-                  autoFocus value={jobReqDraft}
-                  onChange={(e) => setJobReqDraft(e.target.value)}
+                <RichTextEditor
+                  value={jobReqDraft}
+                  onChange={(val) => setJobReqDraft(val)}
                   placeholder={t("applications.jobRequirements.placeholder")}
-                  className="w-full min-h-[200px] rounded-md border border-hairline bg-surface p-3 text-sm text-ink-secondary focus:outline-none focus:ring-1 focus:ring-primary resize-y leading-relaxed"
+                  minHeight="180px"
                 />
                 <div className="flex gap-2 justify-end">
                   <button onClick={() => setEditingJobReq(false)} className="text-xs px-3 py-1.5 rounded-md border border-hairline text-ink-muted hover:bg-muted transition-colors">{t("applications.jobRequirements.cancel")}</button>
@@ -373,7 +374,10 @@ export function ApplicationDetailPage({ id }: { id: string }) {
                 </div>
               </div>
             ) : a.job_requirements ? (
-              <p className="text-sm text-ink-secondary whitespace-pre-wrap leading-relaxed">{a.job_requirements}</p>
+              <div
+                className="text-sm text-ink-secondary leading-relaxed prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h1]:text-base [&_h1]:font-bold [&_h1]:text-ink [&_h1]:mt-2 [&_h1]:mb-1 [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-ink [&_h2]:mt-2 [&_h2]:mb-1 [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-3 [&_blockquote]:italic [&_p]:mb-1.5 last:[&_p]:mb-0"
+                dangerouslySetInnerHTML={{ __html: a.job_requirements.includes("<") ? a.job_requirements : a.job_requirements.replace(/\n/g, "<br/>") }}
+              />
             ) : (
               <button
                 onClick={() => { setJobReqDraft(""); setEditingJobReq(true); }}
@@ -401,11 +405,11 @@ export function ApplicationDetailPage({ id }: { id: string }) {
             </div>
             {editingJobDesc ? (
               <div className="space-y-2">
-                <textarea
-                  autoFocus value={jobDescDraft}
-                  onChange={(e) => setJobDescDraft(e.target.value)}
+                <RichTextEditor
+                  value={jobDescDraft}
+                  onChange={(val) => setJobDescDraft(val)}
                   placeholder={t("applications.jobDescription.placeholder")}
-                  className="w-full min-h-[200px] rounded-md border border-hairline bg-surface p-3 text-sm text-ink-secondary focus:outline-none focus:ring-1 focus:ring-primary resize-y leading-relaxed"
+                  minHeight="180px"
                 />
                 <div className="flex gap-2 justify-end">
                   <button onClick={() => setEditingJobDesc(false)} className="text-xs px-3 py-1.5 rounded-md border border-hairline text-ink-muted hover:bg-muted transition-colors">{t("applications.jobDescription.cancel")}</button>
@@ -417,7 +421,10 @@ export function ApplicationDetailPage({ id }: { id: string }) {
                 </div>
               </div>
             ) : a.job_description ? (
-              <p className="text-sm text-ink-secondary whitespace-pre-wrap leading-relaxed">{a.job_description}</p>
+              <div
+                className="text-sm text-ink-secondary leading-relaxed prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h1]:text-base [&_h1]:font-bold [&_h1]:text-ink [&_h1]:mt-2 [&_h1]:mb-1 [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-ink [&_h2]:mt-2 [&_h2]:mb-1 [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-3 [&_blockquote]:italic [&_p]:mb-1.5 last:[&_p]:mb-0"
+                dangerouslySetInnerHTML={{ __html: a.job_description.includes("<") ? a.job_description : a.job_description.replace(/\n/g, "<br/>") }}
+              />
             ) : (
               <button
                 onClick={() => { setJobDescDraft(""); setEditingJobDesc(true); }}

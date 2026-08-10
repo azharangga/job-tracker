@@ -13,6 +13,7 @@ import { fileSize, formatDate } from "@/lib/format";
 import type { DocumentKind } from "@/types";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
@@ -440,11 +441,11 @@ export function DocumentsPage() {
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">
               {t("documents.form.description")}
             </label>
-            <textarea
+            <RichTextEditor
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(val) => setDescription(val)}
               placeholder="e.g. CV for UI/UX Designer role"
-              className="w-full h-20 rounded-md border border-hairline bg-surface p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+              minHeight="140px"
             />
           </div>
 
@@ -541,10 +542,10 @@ export function DocumentsPage() {
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">
               {t("documents.form.description")}
             </label>
-            <textarea
+            <RichTextEditor
               value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              className="w-full h-20 rounded-md border border-hairline bg-surface p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+              onChange={(val) => setEditDescription(val)}
+              minHeight="140px"
             />
           </div>
 

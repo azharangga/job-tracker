@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 
 export interface ApplicationFormState {
   position: string;
@@ -375,11 +376,11 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
       {/* Row 8: Notes */}
       <div>
         <label className={labelCls}>{t("applications.form.notes")}</label>
-        <textarea
+        <RichTextEditor
           value={form.notes}
-          onChange={(e) => setForm({ ...form, notes: e.target.value })}
+          onChange={(val) => setForm({ ...form, notes: val })}
           placeholder={t("applications.form.notesPlaceholder")}
-          className="w-full h-20 px-3 py-2 rounded-md border border-hairline bg-surface text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-1 focus:ring-primary transition-colors resize-y leading-relaxed"
+          minHeight="140px"
         />
       </div>
 
@@ -388,21 +389,21 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
         <>
           <div>
             <label className={labelCls}>{t("applications.jobRequirements.title")}</label>
-            <textarea
+            <RichTextEditor
               value={form.job_requirements || ""}
-              onChange={(e) => setForm({ ...form, job_requirements: e.target.value })}
+              onChange={(val) => setForm({ ...form, job_requirements: val })}
               placeholder={t("applications.jobRequirements.placeholder")}
-              className="w-full h-24 px-3 py-2 rounded-md border border-hairline bg-surface text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-1 focus:ring-primary transition-colors resize-y leading-relaxed"
+              minHeight="160px"
             />
           </div>
 
           <div>
             <label className={labelCls}>{t("applications.jobDescription.title")}</label>
-            <textarea
+            <RichTextEditor
               value={form.job_description || ""}
-              onChange={(e) => setForm({ ...form, job_description: e.target.value })}
+              onChange={(val) => setForm({ ...form, job_description: val })}
               placeholder={t("applications.jobDescription.placeholder")}
-              className="w-full h-24 px-3 py-2 rounded-md border border-hairline bg-surface text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-1 focus:ring-primary transition-colors resize-y leading-relaxed"
+              minHeight="160px"
             />
           </div>
         </>

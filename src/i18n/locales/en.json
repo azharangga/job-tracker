@@ -302,8 +302,8 @@
     "form": {
       "title": "Title",
       "titlePlaceholder": "e.g. Interview preparation, Questions for HR",
-      "content": "Content (Markdown)",
-      "contentPlaceholder": "Write your notes here (supports Markdown)..."
+      "content": "Content",
+      "contentPlaceholder": "Write your notes here..."
     },
     "created": "Note added",
     "deleted": "Note deleted"

@@ -8,6 +8,7 @@ import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { EmptyState } from "@/components/common/EmptyState";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -119,7 +120,11 @@ export function NotesPage() {
                 <h1 className="text-h3 sm:text-h2 text-ink break-words">{selected.title}</h1>
                 <div className="text-xs text-ink-faint mt-1">{formatRelative(selected.updated_at)}</div>
                 <div className="prose prose-sm mt-6 max-w-none text-ink-secondary prose-headings:text-ink prose-strong:text-ink prose-a:text-primary break-words">
-                  <ReactMarkdown>{selected.body_markdown}</ReactMarkdown>
+                  {selected.body_markdown?.includes("<") ? (
+                    <div dangerouslySetInnerHTML={{ __html: selected.body_markdown }} />
+                  ) : (
+                    <ReactMarkdown>{selected.body_markdown}</ReactMarkdown>
+                  )}
                 </div>
               </>
             )}
@@ -147,16 +152,15 @@ export function NotesPage() {
             className="w-full h-9 px-3 rounded-md bg-surface border border-hairline text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
           />
         </label>
-        <label className="block">
+        <div className="block mt-3">
           <span className="text-xs font-medium text-ink-secondary mb-1.5 block">{t("notes.form.content")}</span>
-          <textarea
-            rows={8}
+          <RichTextEditor
             value={form.body_markdown}
-            onChange={(e) => setForm({ ...form, body_markdown: e.target.value })}
+            onChange={(val) => setForm({ ...form, body_markdown: val })}
             placeholder={t("notes.form.contentPlaceholder")}
-            className="w-full px-3 py-2 rounded-md bg-surface border border-hairline text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-colors font-mono"
+            minHeight="200px"
           />
-        </label>
+        </div>
       </FormDialog>
 
       <ConfirmDialog
