@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { ChevronLeft, ExternalLink, MapPin, Calendar, DollarSign, Building2, Pencil, Trash2, Check } from "lucide-react";
+import { ChevronLeft, ExternalLink, MapPin, Calendar, DollarSign, Building2, Pencil, Trash2, Check, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { CompanyAvatar } from "@/components/common/CompanyAvatar";
 import { StatusBadge, PriorityBadge } from "@/components/common/badges";
@@ -281,17 +281,9 @@ export function ApplicationDetailPage({ id }: { id: string }) {
               <MetaField
                 label={t("applications.vacancyStatus", { defaultValue: "Status Lowongan" })}
                 value={
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold mt-0.5",
-                      isOpen
-                        ? "bg-success/10 text-success border border-success/20"
-                        : "bg-destructive/10 text-destructive border border-destructive/20"
-                    )}
-                  >
-                    <span className={cn("h-1.5 w-1.5 rounded-full", isOpen ? "bg-success" : "bg-destructive")} />
+                  <StickerBadge color={isOpen ? "green" : "red"} className="mt-0.5">
                     {isOpen ? t("applications.statusOpen", { defaultValue: "Open" }) : t("applications.statusClosed", { defaultValue: "Closed" })}
-                  </span>
+                  </StickerBadge>
                 }
               />
               <MetaField label={t("applications.form.mode")} value={a.work_mode ? WORK_MODE_LABELS[a.work_mode] : "-"} />
@@ -577,7 +569,17 @@ export function ApplicationDetailPage({ id }: { id: string }) {
                       (state === "completed" || state === "offer") && "bg-success ring-success/10",
                       state === "rejected" && "bg-destructive ring-destructive/20",
                       state === "future" && "bg-hairline opacity-60"
-                    )} />
+                    )}>
+                      {state === "active" && (
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-50 animate-ping" />
+                      )}
+                      {(state === "completed" || state === "offer") && (
+                        <Check className="h-2.5 w-2.5 text-white stroke-[3]" />
+                      )}
+                      {state === "rejected" && (
+                        <X className="h-2.5 w-2.5 text-white stroke-[3]" />
+                      )}
+                    </span>
                     <div className="flex items-center justify-between gap-3 min-w-0">
                       <div className="min-w-0">
                         <div className={cn(
