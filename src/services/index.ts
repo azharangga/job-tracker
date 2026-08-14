@@ -92,6 +92,18 @@ export function listEvents(): Promise<CalendarEvent[]> {
   return isDemo() ? demoRepo.listEvents() : liveRepo.listEvents();
 }
 
+export function createEvent(patch: Partial<CalendarEvent>): Promise<CalendarEvent> {
+  return isDemo() ? demoRepo.createEvent(patch) : liveRepo.createEvent(patch);
+}
+
+export function updateEvent(id: string, patch: Partial<CalendarEvent>): Promise<CalendarEvent> {
+  return isDemo() ? demoRepo.updateEvent(id, patch) : liveRepo.updateEvent(id, patch);
+}
+
+export function deleteEvent(id: string): Promise<void> {
+  return isDemo() ? demoRepo.deleteEvent(id) : liveRepo.deleteEvent(id);
+}
+
 export function createCompany(patch: Partial<Company>): Promise<Company> {
   return isDemo() ? demoRepo.createCompany(patch) : liveRepo.createCompany(patch);
 }

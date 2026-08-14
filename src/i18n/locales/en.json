@@ -416,7 +416,30 @@
     "description": "Track your scheduled interviews, tests, and deadlines.",
     "today": "Today",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "addEvent": "Add Event",
+    "agenda": "Agenda",
+    "noEvents": "No events on this day.",
+    "addOne": "+ Add one",
+    "newEvent": "New Event",
+    "editEvent": "Edit Event",
+    "form": {
+      "title": "Title",
+      "type": "Type",
+      "start": "Start",
+      "end": "End",
+      "location": "Location",
+      "link": "Link",
+      "notes": "Notes",
+      "titlePlaceholder": "e.g. Interview with HR",
+      "locationPlaceholder": "e.g. Google Meet, Jakarta",
+      "linkPlaceholder": "https://meet.google.com/...",
+      "notesPlaceholder": "Any additional notes...",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "add": "Add Event",
+      "saving": "Saving..."
+    }
   },
   "kanban": {
     "title": "Kanban Board",

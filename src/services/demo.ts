@@ -231,7 +231,7 @@ export async function listNotes(): Promise<NoteRow[]> {
   return notes.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 }
 
-// ----------------------- Calendar -----------------------
+// ----------------------- Calendar Events -----------------------
 export async function listEvents(): Promise<CalendarEvent[]> {
   const events = getLocalData("calendar_events") as CalendarEvent[];
   const apps = getLocalData("applications") as Application[];
@@ -250,6 +250,43 @@ export async function listEvents(): Promise<CalendarEvent[]> {
       } : undefined,
     };
   }).sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+}
+
+export async function createEvent(patch: Partial<CalendarEvent>): Promise<CalendarEvent> {
+  const events = getLocalData("calendar_events") as CalendarEvent[];
+  const newEvent: CalendarEvent = {
+    id: generateUUID(),
+    application_id: null,
+    title: "Untitled Event",
+    kind: "other",
+    starts_at: new Date().toISOString(),
+    ends_at: null,
+    location: null,
+    url: null,
+    notes: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    ...patch,
+  } as CalendarEvent;
+  events.push(newEvent);
+  setLocalData("calendar_events", events);
+  return newEvent;
+}
+
+export async function updateEvent(id: string, patch: Partial<CalendarEvent>): Promise<CalendarEvent> {
+  const events = getLocalData("calendar_events") as CalendarEvent[];
+  const idx = events.findIndex((e) => e.id === id);
+  if (idx !== -1) {
+    events[idx] = { ...events[idx], ...patch, updated_at: new Date().toISOString() };
+    setLocalData("calendar_events", events);
+    return events[idx];
+  }
+  throw new Error("Event not found");
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  const events = getLocalData("calendar_events") as CalendarEvent[];
+  setLocalData("calendar_events", events.filter((e) => e.id !== id));
 }
 
 // ----------------------- CRUD Extensions -----------------------
@@ -450,5 +487,6 @@ export async function updateDocument(id: string, patch: Partial<DocumentRow>) {
   }
   throw new Error("Document not found");
 }
+
 
 

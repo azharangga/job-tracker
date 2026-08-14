@@ -227,6 +227,32 @@ export async function listEvents(): Promise<CalendarEvent[]> {
   return (data as unknown as CalendarEvent[]) ?? [];
 }
 
+export async function createEvent(patch: Partial<CalendarEvent>): Promise<CalendarEvent> {
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .insert({ title: "Untitled Event", kind: "other", starts_at: new Date().toISOString(), ...(patch as Record<string, unknown>) } as never)
+    .select("*, application:applications(id,position,company_id,company:companies(id,name,slug))")
+    .single();
+  if (error) throw error;
+  return data as unknown as CalendarEvent;
+}
+
+export async function updateEvent(id: string, patch: Partial<CalendarEvent>): Promise<CalendarEvent> {
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .update(patch as never)
+    .eq("id", id)
+    .select("*, application:applications(id,position,company_id,company:companies(id,name,slug))")
+    .single();
+  if (error) throw error;
+  return data as unknown as CalendarEvent;
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  const { error } = await supabase.from("calendar_events").delete().eq("id", id);
+  if (error) throw error;
+}
+
 // ----------------------- CRUD Extensions -----------------------
 
 // Companies

@@ -416,7 +416,30 @@
     "description": "Pantau jadwal wawancara, tes, dan tenggat waktu lamaran.",
     "today": "Hari ini",
     "previous": "Sebelumnya",
-    "next": "Selanjutnya"
+    "next": "Selanjutnya",
+    "addEvent": "Tambah Acara",
+    "agenda": "Agenda",
+    "noEvents": "Tidak ada acara pada hari ini.",
+    "addOne": "+ Tambahkan",
+    "newEvent": "Acara Baru",
+    "editEvent": "Edit Acara",
+    "form": {
+      "title": "Judul",
+      "type": "Tipe",
+      "start": "Mulai",
+      "end": "Selesai",
+      "location": "Lokasi",
+      "link": "Tautan",
+      "notes": "Catatan",
+      "titlePlaceholder": "mis. Interview dengan HR",
+      "locationPlaceholder": "mis. Google Meet, Jakarta",
+      "linkPlaceholder": "https://meet.google.com/...",
+      "notesPlaceholder": "Catatan tambahan...",
+      "cancel": "Batal",
+      "save": "Simpan Perubahan",
+      "add": "Tambah Acara",
+      "saving": "Menyimpan..."
+    }
   },
   "kanban": {
     "title": "Papan Kanban",
