@@ -83,9 +83,15 @@ export function DashboardPage() {
   });
   const monthly = months.map((m) => ({
     month: m.label,
-    count: applications.filter((a) =>
-      a.applied_at ? format(parseISO(a.applied_at), "yyyy-MM") === m.key : false,
-    ).length,
+    count: applications.filter((a) => {
+      const dateStr = a.applied_at ?? a.created_at;
+      if (!dateStr) return false;
+      try {
+        return format(parseISO(dateStr), "yyyy-MM") === m.key;
+      } catch {
+        return false;
+      }
+    }).length,
   }));
 
   // By platform
@@ -98,22 +104,29 @@ export function DashboardPage() {
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
 
-  // Funnel
-  const funnel = ["applied", "hr_screening", "user_interview", "final_interview", "offer", "accepted"].map(
-    (s) => ({
-      stage: APP_STATUS_LABELS[s as AppStatus],
-      count: applications.filter((a) => APP_STATUS_ORDER.indexOf(a.status) >= APP_STATUS_ORDER.indexOf(s as AppStatus)).length,
-    }),
-  );
+  // Funnel — count apps that have reached or passed each stage
+  const funnelStages: AppStatus[] = ["applied", "hr_screening", "hr_interview", "technical_test", "user_interview", "final_interview", "offer", "accepted"];
+  const funnel = funnelStages.map((s) => {
+    const stageIdx = APP_STATUS_ORDER.indexOf(s);
+    const count = applications.filter((a) => {
+      if (a.status === "rejected" || a.status === "withdrawn") {
+        // Count rejected apps that got AT LEAST to this stage
+        const rejectedAtIdx = a.rejected_at_stage ? APP_STATUS_ORDER.indexOf(a.rejected_at_stage) : APP_STATUS_ORDER.indexOf("applied");
+        return rejectedAtIdx >= stageIdx;
+      }
+      return APP_STATUS_ORDER.indexOf(a.status) >= stageIdx;
+    }).length;
+    return { stage: APP_STATUS_LABELS[s], count };
+  });
 
   const STICKER_HEX = [
     "oklch(0.58 0.16 246)",
     "oklch(0.62 0.09 190)",
     "oklch(0.66 0.18 45)",
-    "oklch(0.82 0.09 305)",
+    "oklch(0.52 0.18 305)",
     "oklch(0.7 0.16 145)",
-    "oklch(0.75 0.19 5)",
-    "oklch(0.75 0.11 240)",
+    "oklch(0.58 0.22 5)",
+    "oklch(0.62 0.22 22)",
     "oklch(0.42 0.06 55)",
   ];
 
@@ -179,7 +192,7 @@ export function DashboardPage() {
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: "oklch(0.48 0.008 60)" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: "oklch(0.48 0.008 60)" }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid oklch(0.92 0.005 85)", fontSize: 12 }} />
-                <Area type="monotone" dataKey="count" stroke="oklch(0.58 0.16 246)" strokeWidth={2} fill="url(#a)" />
+                <Area type="monotone" dataKey="count" name={t("dashboard.applications", { defaultValue: "Applications" })} stroke="oklch(0.58 0.16 246)" strokeWidth={2} fill="url(#a)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -193,29 +206,35 @@ export function DashboardPage() {
         >
           <div className="text-eyebrow text-ink-muted">{t("dashboard.byPlatform")}</div>
           <div className="text-title text-ink mt-1 mb-3">{t("dashboard.sourcesOfLeads")}</div>
-          <div className="h-52">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie data={byPlatform} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={2}>
-                  {byPlatform.map((_, i) => (
-                    <Cell key={i} fill={STICKER_HEX[i % STICKER_HEX.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid oklch(0.92 0.005 85)", fontSize: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <ul className="mt-3 space-y-1.5">
-            {byPlatform.slice(0, 5).map((p, i) => (
-              <li key={p.name} className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-2 text-ink-secondary">
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: STICKER_HEX[i % STICKER_HEX.length] }} />
-                  {p.name}
-                </span>
-                <span className="tabular-nums text-ink-muted">{p.value}</span>
-              </li>
-            ))}
-          </ul>
+          {byPlatform.length === 0 ? (
+            <div className="h-52 flex items-center justify-center text-sm text-ink-muted">{t("dashboard.noData")}</div>
+          ) : (
+            <>
+              <div className="h-52">
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie data={byPlatform} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={2}>
+                      {byPlatform.map((_, i) => (
+                        <Cell key={i} fill={STICKER_HEX[i % STICKER_HEX.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid oklch(0.92 0.005 85)", fontSize: 12 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="mt-3 space-y-1.5">
+                {byPlatform.slice(0, 5).map((p, i) => (
+                  <li key={p.name} className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-2 text-ink-secondary">
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: STICKER_HEX[i % STICKER_HEX.length] }} />
+                      {p.name}
+                    </span>
+                    <span className="tabular-nums text-ink-muted">{p.value}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </motion.div>
       </div>
 
@@ -224,16 +243,20 @@ export function DashboardPage() {
         <div className="rounded-lg bg-surface border border-hairline p-5 shadow-soft">
           <div className="text-eyebrow text-ink-muted">{t("dashboard.conversionFunnel")}</div>
           <div className="text-title text-ink mt-1 mb-3">{t("dashboard.whereAppsLand")}</div>
-          <div className="h-56">
-            <ResponsiveContainer>
-              <BarChart data={funnel} layout="vertical" margin={{ left: 20 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="stage" type="category" tick={{ fontSize: 12, fill: "oklch(0.24 0.006 60)" }} axisLine={false} tickLine={false} width={110} />
-                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid oklch(0.92 0.005 85)", fontSize: 12 }} />
-                <Bar dataKey="count" fill="oklch(0.58 0.16 246)" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {funnel.every(f => f.count === 0) ? (
+            <div className="h-56 flex items-center justify-center text-sm text-ink-muted">{t("dashboard.noData")}</div>
+          ) : (
+            <div className="h-64">
+              <ResponsiveContainer>
+                <BarChart data={funnel} layout="vertical" margin={{ left: 8, right: 16 }}>
+                  <XAxis type="number" hide allowDecimals={false} />
+                  <YAxis dataKey="stage" type="category" tick={{ fontSize: 11, fill: "oklch(0.24 0.006 60)" }} axisLine={false} tickLine={false} width={105} />
+                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid oklch(0.92 0.005 85)", fontSize: 12 }} />
+                  <Bar dataKey="count" name={t("dashboard.applications", { defaultValue: "Applications" })} fill="oklch(0.58 0.16 246)" radius={[0, 6, 6, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg bg-surface border border-hairline p-5 shadow-soft">
@@ -255,7 +278,9 @@ export function DashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-ink truncate">{e.title}</div>
-                    <div className="text-xs text-ink-muted mt-0.5">{formatDate(e.starts_at, "EEE, MMM d · HH:mm")}</div>
+                    <div className="text-xs text-ink-muted mt-0.5">
+                      {format(parseISO(e.starts_at), "EEE, MMM d")} · {format(parseISO(e.starts_at), "HH:mm")}
+                    </div>
                   </div>
                 </li>
               ))}

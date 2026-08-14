@@ -130,7 +130,9 @@
     "viewAll": "View all →",
     "thisWeeksTasks": "This Week's Tasks",
     "focusPoints": "Focus points",
-    "noTasks": "No tasks due this week."
+    "noTasks": "No tasks due this week.",
+    "noData": "No data yet.",
+    "applications": "Applications"
   },
   "applications": {
     "title": "Applications",

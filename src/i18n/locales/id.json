@@ -117,7 +117,9 @@
     "viewAll": "Lihat semua →",
     "thisWeeksTasks": "Tugas Minggu Ini",
     "focusPoints": "Fokus utama",
-    "noTasks": "Tidak ada tugas minggu ini."
+    "noTasks": "Tidak ada tugas minggu ini.",
+    "noData": "Belum ada data.",
+    "applications": "Lamaran"
   },
   "applications": {
     "title": "Lamaran",
