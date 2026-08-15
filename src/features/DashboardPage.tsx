@@ -62,18 +62,22 @@ export function DashboardPage() {
   const applications = apps.data ?? [];
   const total = applications.length;
   const active = applications.filter((a) => APP_ACTIVE_STATUSES.includes(a.status)).length;
-  const interviews = applications.filter((a) =>
+  const inInterview = applications.filter((a) =>
     ["user_interview", "hr_interview", "final_interview", "technical_test"].includes(a.status),
   ).length;
-  const offers = applications.filter((a) => a.status === "offer").length;
+  const offers = applications.filter((a) => ["offer", "accepted"].includes(a.status)).length;
   const accepted = applications.filter((a) => a.status === "accepted").length;
   const rejected = applications.filter((a) => a.status === "rejected").length;
   const wishlist = applications.filter((a) => a.status === "wishlist").length;
+  const applied = applications.filter((a) => a.status === "applied").length;
+  const awaitingReply = applied; // sent but no response yet
   const responded = applications.filter(
     (a) => !["wishlist", "applied"].includes(a.status),
   ).length;
-  const responseRate =
-    total > 0 ? Math.round((responded / (total - wishlist || 1)) * 100) : 0;
+  const sentApps = total - wishlist; // excludes wishlist (not yet applied)
+  const responseRate = sentApps > 0 ? Math.round((responded / sentApps) * 100) : 0;
+  const interviewRate = sentApps > 0 ? Math.round((inInterview + offers + rejected) / sentApps * 100) : 0;
+  const offerRate = sentApps > 0 ? Math.round(offers / sentApps * 100) : 0;
 
   // Monthly trend (last 6 months)
   const now = new Date();
@@ -157,12 +161,12 @@ export function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-3">
         <StatCard label={t("dashboard.totalApplications")} value={total} icon={<Briefcase className="h-4 w-4" />} hint={t("dashboard.inWishlist", { count: wishlist })} />
         <StatCard label={t("dashboard.activeProcess")} value={active} icon={<Activity className="h-4 w-4" />} hint={t("dashboard.inProgress")} />
-        <StatCard label={t("dashboard.interviews")} value={interviews} icon={<Sparkles className="h-4 w-4" />} hint={t("dashboard.thisMonthUpcoming")} />
+        <StatCard label={t("dashboard.awaitingReply")} value={awaitingReply} icon={<Clock className="h-4 w-4" />} hint={t("dashboard.awaitingReplyHint")} />
         <StatCard label={t("dashboard.offers")} value={offers} icon={<Trophy className="h-4 w-4" />} hint={t("dashboard.acceptedHint", { count: accepted })} />
-        <StatCard label={t("dashboard.rejected")} value={rejected} icon={<XCircle className="h-4 w-4" />} hint={t("dashboard.noResponseHint")} />
-        <StatCard label={t("dashboard.responseRate")} value={`${responseRate}%`} icon={<TrendingUp className="h-4 w-4" />} trend={{ value: `${responded}/${total - wishlist}`, positive: responseRate >= 50 }} />
-        <StatCard label={t("dashboard.interviewRate")} value={`${total ? Math.round((interviews / (total - wishlist || 1)) * 100) : 0}%`} icon={<CheckCircle2 className="h-4 w-4" />} />
-        <StatCard label={t("dashboard.offerRate")} value={`${total ? Math.round(((offers + accepted) / (total - wishlist || 1)) * 100) : 0}%`} icon={<Trophy className="h-4 w-4" />} hint={t("dashboard.fromActivePool")} />
+        <StatCard label={t("dashboard.rejected")} value={rejected} icon={<XCircle className="h-4 w-4" />} hint={sentApps > 0 ? t("dashboard.rejectedRate", { rate: Math.round(rejected / sentApps * 100) }) : undefined} />
+        <StatCard label={t("dashboard.responseRate")} value={`${responseRate}%`} icon={<TrendingUp className="h-4 w-4" />} trend={{ value: `${responded}/${sentApps}`, positive: responseRate >= 30 }} />
+        <StatCard label={t("dashboard.interviewRate")} value={`${interviewRate}%`} icon={<Sparkles className="h-4 w-4" />} hint={t("dashboard.ofSentApps")} />
+        <StatCard label={t("dashboard.offerRate")} value={`${offerRate}%`} icon={<CheckCircle2 className="h-4 w-4" />} hint={t("dashboard.ofSentApps")} />
       </div>
 
       {/* Charts */}

@@ -10,10 +10,10 @@ const HEX = [
   "oklch(0.58 0.16 246)",
   "oklch(0.62 0.09 190)",
   "oklch(0.66 0.18 45)",
-  "oklch(0.82 0.09 305)",
+  "oklch(0.52 0.18 305)",
   "oklch(0.7 0.16 145)",
-  "oklch(0.75 0.19 5)",
-  "oklch(0.75 0.11 240)",
+  "oklch(0.58 0.22 5)",
+  "oklch(0.62 0.22 22)",
   "oklch(0.42 0.06 55)",
 ];
 
@@ -28,7 +28,14 @@ export function AnalyticsPage() {
     const d = startOfMonth(subMonths(now, 5 - i));
     return { key: format(d, "yyyy-MM"), label: format(d, "MMM") };
   });
-  const monthly = months.map((m) => ({ month: m.label, count: data.filter((a) => a.applied_at && format(parseISO(a.applied_at), "yyyy-MM") === m.key).length }));
+  const monthly = months.map((m) => ({
+    month: m.label,
+    count: data.filter((a) => {
+      const dateStr = a.applied_at ?? a.created_at;
+      if (!dateStr) return false;
+      try { return format(parseISO(dateStr), "yyyy-MM") === m.key; } catch { return false; }
+    }).length,
+  }));
 
   const platformCounts = groupBy(data, (a) => a.platform ?? "Other");
   const roleCounts = groupBy(data, (a) => normalizeRole(a.position));
@@ -36,10 +43,18 @@ export function AnalyticsPage() {
   const typeCounts = groupBy(data, (a) => (a.employment_type ? EMPLOYMENT_TYPE_LABELS[a.employment_type] : "-"));
   const locationCounts = groupBy(data, (a) => a.location ?? "-");
 
-  const funnel = ["applied", "hr_screening", "user_interview", "final_interview", "offer", "accepted"].map((s) => ({
-    stage: APP_STATUS_LABELS[s as AppStatus],
-    count: data.filter((a) => APP_STATUS_ORDER.indexOf(a.status) >= APP_STATUS_ORDER.indexOf(s as AppStatus)).length,
-  }));
+  const funnelStages: AppStatus[] = ["applied", "hr_screening", "hr_interview", "technical_test", "user_interview", "final_interview", "offer", "accepted"];
+  const funnel = funnelStages.map((s) => {
+    const stageIdx = APP_STATUS_ORDER.indexOf(s);
+    const count = data.filter((a) => {
+      if (a.status === "rejected" || a.status === "withdrawn") {
+        const rejectedAtIdx = a.rejected_at_stage ? APP_STATUS_ORDER.indexOf(a.rejected_at_stage) : APP_STATUS_ORDER.indexOf("applied");
+        return rejectedAtIdx >= stageIdx;
+      }
+      return APP_STATUS_ORDER.indexOf(a.status) >= stageIdx;
+    }).length;
+    return { stage: APP_STATUS_LABELS[s], count };
+  });
 
   const rates = [
     { name: t("analytics.rateResponse"), value: pct(data.filter((a) => !["wishlist", "applied"].includes(a.status)).length, data.filter((a) => a.status !== "wishlist").length), fill: HEX[0] },
