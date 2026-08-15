@@ -47,7 +47,7 @@ export function AnalyticsPage() {
   const funnel = funnelStages.map((s) => {
     const stageIdx = APP_STATUS_ORDER.indexOf(s);
     const count = data.filter((a) => {
-      if (a.status === "rejected" || a.status === "withdrawn") {
+      if (a.status === "rejected") {
         const rejectedAtIdx = a.rejected_at_stage ? APP_STATUS_ORDER.indexOf(a.rejected_at_stage) : APP_STATUS_ORDER.indexOf("applied");
         return rejectedAtIdx >= stageIdx;
       }

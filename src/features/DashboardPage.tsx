@@ -113,7 +113,7 @@ export function DashboardPage() {
   const funnel = funnelStages.map((s) => {
     const stageIdx = APP_STATUS_ORDER.indexOf(s);
     const count = applications.filter((a) => {
-      if (a.status === "rejected" || a.status === "withdrawn") {
+      if (a.status === "rejected") {
         // Count rejected apps that got AT LEAST to this stage
         const rejectedAtIdx = a.rejected_at_stage ? APP_STATUS_ORDER.indexOf(a.rejected_at_stage) : APP_STATUS_ORDER.indexOf("applied");
         return rejectedAtIdx >= stageIdx;
