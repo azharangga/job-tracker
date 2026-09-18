@@ -39,9 +39,10 @@ import {
   APP_STATUS_LABELS,
   APP_STATUS_ORDER,
 } from "@/constants";
-import { formatDate, formatRelative } from "@/lib/format";
+import { formatDate, formatDateWIB, formatRelative } from "@/lib/format";
 import type { AppStatus } from "@/types";
 import { format, isToday, isTomorrow, isThisWeek, parseISO, startOfMonth, subMonths } from "date-fns";
+import { id as localeID } from "date-fns/locale";
 
 import { useTranslation } from "react-i18next";
 
@@ -83,7 +84,7 @@ export function DashboardPage() {
   const now = new Date();
   const months = Array.from({ length: 6 }).map((_, i) => {
     const d = startOfMonth(subMonths(now, 5 - i));
-    return { key: format(d, "yyyy-MM"), label: format(d, "MMM") };
+    return { key: format(d, "yyyy-MM"), label: format(d, "MMM", { locale: localeID }) };
   });
   const monthly = months.map((m) => ({
     month: m.label,
@@ -91,7 +92,7 @@ export function DashboardPage() {
       const dateStr = a.applied_at ?? a.created_at;
       if (!dateStr) return false;
       try {
-        return format(parseISO(dateStr), "yyyy-MM") === m.key;
+        return format(parseISO(dateStr), "yyyy-MM", { locale: localeID }) === m.key;
       } catch {
         return false;
       }
@@ -278,12 +279,12 @@ export function DashboardPage() {
               {upcomingInterviews.map((e) => (
                 <li key={e.id} className="flex items-start gap-3">
                   <div className="mt-0.5 h-8 w-8 rounded-md bg-primary-soft text-primary grid place-items-center text-[11px] font-semibold">
-                    {format(parseISO(e.starts_at), "dd")}
+                    {formatDateWIB(parseISO(e.starts_at), "dd")}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-ink truncate">{e.title}</div>
                     <div className="text-xs text-ink-muted mt-0.5">
-                      {format(parseISO(e.starts_at), "EEE, MMM d")} · {format(parseISO(e.starts_at), "HH:mm")}
+                      {formatDateWIB(parseISO(e.starts_at), "EEE, d MMM")} · {formatDateWIB(parseISO(e.starts_at), "HH:mm")} WIB
                     </div>
                   </div>
                 </li>
@@ -312,7 +313,7 @@ export function DashboardPage() {
                     <div className="text-xs text-ink-muted truncate">{a.company?.name}</div>
                   </div>
                   <span className="text-xs text-sticker-orange font-medium tabular-nums">
-                    {formatDate(a.deadline, "MMM d")}
+                    {formatDate(a.deadline, "d MMM")}
                   </span>
                 </li>
               ))}
@@ -370,7 +371,7 @@ export function DashboardPage() {
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-ink truncate">{t.title}</div>
                     <div className="text-xs text-ink-muted mt-0.5 flex items-center gap-2">
-                      {t.due_at && <span>{formatDate(t.due_at, "EEE, MMM d")}</span>}
+                      {t.due_at && <span>{formatDate(t.due_at, "EEE, d MMM")}</span>}
                       {t.priority && <PriorityBadge priority={t.priority} />}
                     </div>
                   </div>

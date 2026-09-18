@@ -127,7 +127,7 @@ export function TasksPage() {
                         <div className={`text-sm ${task.status === "done" ? "text-ink-muted line-through" : "text-ink"} truncate`}>{task.title}</div>
                         <div className="text-xs text-ink-muted mt-0.5 flex flex-wrap items-center gap-x-2">
                           {task.application?.company?.name && <span className="truncate max-w-[160px]">{task.application.company.name}</span>}
-                          {task.due_at && <span>· {formatDate(task.due_at, "EEE MMM d")}</span>}
+                          {task.due_at && <span>· {formatDate(task.due_at, "EEE, d MMM")}</span>}
                         </div>
                       </div>
                       {task.priority && <PriorityBadge priority={task.priority} />}

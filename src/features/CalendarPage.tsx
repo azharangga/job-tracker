@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek } from "date-fns";
+import { id as localeID } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, MapPin, Link2, Clock } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { EventKindBadge } from "@/components/common/badges";
@@ -157,7 +158,7 @@ export function CalendarPage() {
         {/* Calendar Grid */}
         <div className="rounded-lg bg-surface border border-hairline shadow-soft overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b border-hairline">
-            <div className="text-title text-ink">{format(cursor, "MMMM yyyy")}</div>
+            <div className="text-title text-ink">{format(cursor, "MMMM yyyy", { locale: localeID })}</div>
             <div className="flex gap-1">
               <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1))} className="h-8 w-8 grid place-items-center rounded-md hover:bg-surface-muted text-ink-secondary">
                 <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
@@ -169,7 +170,7 @@ export function CalendarPage() {
             </div>
           </div>
           <div className="grid grid-cols-7 border-b border-hairline text-eyebrow text-ink-muted">
-            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+            {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d) => (
               <div key={d} className="px-2 py-2 text-center">{d}</div>
             ))}
           </div>
@@ -209,7 +210,7 @@ export function CalendarPage() {
         <div className="rounded-lg bg-surface border border-hairline p-5 shadow-soft">
           <div>
               <div className="text-eyebrow text-ink-muted">{t("calendar.agenda")}</div>
-              <div className="text-title text-ink mt-0.5">{format(selected, "EEEE, MMM d")}</div>
+              <div className="text-title text-ink mt-0.5">{format(selected, "EEEE, d MMM", { locale: localeID })}</div>
             </div>
 
           {selectedEvents.length === 0 ? (
@@ -245,7 +246,7 @@ export function CalendarPage() {
                       <Clock className="h-3 w-3 shrink-0" strokeWidth={1.75} />
                       <span>
                         {format(parseISO(e.starts_at), "HH:mm")}
-                        {e.ends_at ? ` – ${format(parseISO(e.ends_at), "HH:mm")}` : ""}
+                        {e.ends_at ? ` – ${format(parseISO(e.ends_at), "HH:mm")}` : ""} WIB
                       </span>
                     </div>
                     {e.location && (

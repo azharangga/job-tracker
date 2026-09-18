@@ -2,6 +2,7 @@
 
 import { useTranslation } from "react-i18next";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { format as formatDateFns } from "date-fns";
 import { APP_STATUS_ORDER, APP_STATUS_LABELS } from "@/constants";
 import type { Company, Contact, AppStatus, WorkMode, EmploymentType, Priority } from "@/types";
 import { formatDate } from "@/lib/format";
@@ -30,6 +31,7 @@ export interface ApplicationFormState {
   salary_max: string;
   currency: string;
   location: string;
+  applied_at: string;
   deadline: string;
   priority: Priority | "";
   recruiter_id: string;
@@ -263,8 +265,8 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
         </div>
       </div>
 
-      {/* Row 5: Platform & Deadline (shadcn DatePicker) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+      {/* Row 5: Platform, Applied At & Deadline (shadcn DatePicker) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <div>
           <label className={labelCls}>{t("applications.form.platform")}</label>
           <input
@@ -273,6 +275,45 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
             placeholder={t("applications.form.platformPlaceholder")}
             className={inputCls}
           />
+        </div>
+
+        <div>
+          <label className={labelCls}>{t("applications.form.appliedAt")}</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  inputCls,
+                  "flex items-center justify-between text-left font-normal cursor-pointer",
+                  !form.applied_at && "text-ink-faint"
+                )}
+              >
+                <span>
+                  {form.applied_at
+                    ? formatDate(form.applied_at)
+                    : t("applications.form.appliedAtPlaceholder", { defaultValue: "dd/mm/yyyy" })}
+                </span>
+                <CalendarIcon className="h-4 w-4 text-ink-faint shrink-0" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={form.applied_at ? new Date(form.applied_at + "T00:00:00") : undefined}
+                onSelect={(date) => {
+                  setForm({
+                    ...form,
+                    applied_at: date ? formatDateFns(date, "yyyy-MM-dd") : "",
+                  });
+                }}
+                captionLayout="dropdown"
+                startMonth={new Date(2020, 0)}
+                endMonth={new Date(2035, 11)}
+                fixedWeeks
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div>
@@ -298,11 +339,11 @@ export function ApplicationFormFields<T extends ApplicationFormState>({
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={form.deadline ? new Date(form.deadline) : undefined}
+                selected={form.deadline ? new Date(form.deadline + "T00:00:00") : undefined}
                 onSelect={(date) => {
                   setForm({
                     ...form,
-                    deadline: date ? date.toISOString() : "",
+                    deadline: date ? formatDateFns(date, "yyyy-MM-dd") : "",
                   });
                 }}
                 captionLayout="dropdown"

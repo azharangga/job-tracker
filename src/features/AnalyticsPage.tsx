@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, RadialBarChart, RadialBar, Legend } from "recharts";
 import { format, parseISO, startOfMonth, subMonths } from "date-fns";
+import { id as localeID } from "date-fns/locale";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { listApplications } from "@/services";
 import { APP_STATUS_ORDER, APP_STATUS_LABELS, WORK_MODE_LABELS, EMPLOYMENT_TYPE_LABELS } from "@/constants";
@@ -26,7 +27,7 @@ export function AnalyticsPage() {
   const now = new Date();
   const months = Array.from({ length: 6 }).map((_, i) => {
     const d = startOfMonth(subMonths(now, 5 - i));
-    return { key: format(d, "yyyy-MM"), label: format(d, "MMM") };
+    return { key: format(d, "yyyy-MM"), label: format(d, "MMM", { locale: localeID }) };
   });
   const monthly = months.map((m) => ({
     month: m.label,

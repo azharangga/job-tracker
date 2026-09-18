@@ -89,6 +89,7 @@ export function ApplicationDetailPage({ id }: { id: string }) {
     salary_max: "",
     currency: "IDR",
     location: "",
+    applied_at: "",
     deadline: "",
     priority: "" as Priority | "",
     recruiter_id: "",
@@ -115,6 +116,7 @@ export function ApplicationDetailPage({ id }: { id: string }) {
         salary_max: a.salary_max !== null ? String(a.salary_max) : "",
         currency: a.currency || "IDR",
         location: a.location || "",
+        applied_at: a.applied_at || "",
         deadline: a.deadline || "",
         priority: a.priority || "",
         recruiter_id: a.recruiter_id || "",
@@ -171,6 +173,7 @@ export function ApplicationDetailPage({ id }: { id: string }) {
       salary_max: form.salary_max ? parseFloat(form.salary_max) : null,
       currency: form.currency || null,
       location: form.location || null,
+      applied_at: form.applied_at || null,
       deadline: form.deadline || null,
       priority: (form.priority || null) as Priority | null,
       recruiter_id: form.recruiter_id || null,
@@ -277,7 +280,7 @@ export function ApplicationDetailPage({ id }: { id: string }) {
 
           return (
             <div className="mt-5 pt-4 border-t border-hairline/60 grid grid-cols-2 sm:grid-cols-4 gap-y-5 gap-x-4">
-              {/* Row 1: Vacancy Status, Work Mode, Job Type, Deadline */}
+              {/* Row 1: Vacancy Status, Work Mode, Job Type, Applied At */}
               <MetaField
                 label={t("applications.vacancyStatus", { defaultValue: "Status Lowongan" })}
                 value={
@@ -288,9 +291,9 @@ export function ApplicationDetailPage({ id }: { id: string }) {
               />
               <MetaField label={t("applications.form.mode")} value={a.work_mode ? WORK_MODE_LABELS[a.work_mode] : "-"} />
               <MetaField label={t("applications.form.jobType")} value={a.employment_type ? EMPLOYMENT_TYPE_LABELS[a.employment_type] : "-"} />
-              <MetaField label={t("applications.form.deadline")} value={formatDate(a.deadline)} />
+              <MetaField label={t("applications.form.appliedAt")} value={formatDate(a.applied_at)} />
 
-              {/* Row 2: Platform, Job URL, Career URL, Recruiter */}
+              {/* Row 2: Platform, Job URL, Career URL, Deadline */}
               <MetaField label={t("applications.form.platform")} value={a.platform ?? "-"} />
               <MetaField
                 label={t("applications.form.jobUrl")}
@@ -324,7 +327,7 @@ export function ApplicationDetailPage({ id }: { id: string }) {
                   ) : "-"
                 }
               />
-              <MetaField label={t("applications.form.recruiter")} value={a.recruiter?.name ?? "-"} />
+              <MetaField label={t("applications.form.deadline")} value={formatDate(a.deadline)} />
             </div>
           );
         })()}

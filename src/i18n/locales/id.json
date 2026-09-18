@@ -222,6 +222,8 @@
       "salaryMax": "Gaji Maksimum",
       "salaryMaxPlaceholder": "Contoh: 20000000",
       "currency": "Mata Uang",
+      "appliedAt": "Tanggal Dilamar",
+      "appliedAtPlaceholder": "Pilih tanggal dilamar...",
       "deadline": "Tenggat Waktu",
       "jobUrl": "Tautan Lowongan",
       "jobUrlPlaceholder": "https://...",

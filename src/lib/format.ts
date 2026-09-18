@@ -1,4 +1,13 @@
-import { format, formatDistanceToNow, parseISO } from "date-fns";
+import { format as fmt, formatDistanceToNow, parseISO } from "date-fns";
+import { id as localeID } from "date-fns/locale";
+
+function parseDateLocal(iso: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return parseISO(iso);
+}
 
 export function formatCurrency(
   min?: number | null,
@@ -6,40 +15,35 @@ export function formatCurrency(
   currency: string | null = "IDR",
 ): string {
   if (min == null && max == null) return "-";
-  const fmt = (n: number) => {
+  const f = (n: number) => {
     if (currency === "IDR") {
       if (n >= 1_000_000) return `Rp${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
       if (n >= 1_000) return `Rp${(n / 1_000).toFixed(0)}k`;
       return `Rp${n}`;
     }
-    return `${currency ?? ""} ${n.toLocaleString()}`;
+    return `${currency ?? ""} ${n.toLocaleString("id-ID")}`;
   };
-  if (min != null && max != null) return `${fmt(min)} - ${fmt(max)}`;
-  return fmt((min ?? max) as number);
+  if (min != null && max != null) return `${f(min)} - ${f(max)}`;
+  return f((min ?? max) as number);
 }
-
-import i18n from "@/i18n";
-import { id as localeID } from "date-fns/locale";
 
 export function formatDate(iso: string | null | undefined, pattern?: string) {
   if (!iso) return "-";
   try {
-    const isIndonesian = i18n.language === "id";
-    const defaultPattern = isIndonesian ? "d MMM yyyy" : "MMM d, yyyy";
-    const finalPattern = pattern ?? defaultPattern;
-    const options = isIndonesian ? { locale: localeID } : undefined;
-    return format(parseISO(iso), finalPattern, options);
+    return fmt(parseDateLocal(iso), pattern ?? "d MMM yyyy", { locale: localeID });
   } catch {
     return "-";
   }
 }
 
+export function formatDateWIB(date: Date, pattern: string) {
+  return fmt(date, pattern, { locale: localeID });
+}
+
 export function formatRelative(iso: string | null | undefined) {
   if (!iso) return "-";
   try {
-    const isIndonesian = i18n.language === "id";
-    const options = isIndonesian ? { locale: localeID, addSuffix: true } : { addSuffix: true };
-    return formatDistanceToNow(parseISO(iso), options);
+    return formatDistanceToNow(parseDateLocal(iso), { locale: localeID, addSuffix: true });
   } catch {
     return "-";
   }

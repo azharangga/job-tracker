@@ -235,6 +235,8 @@
       "salaryMax": "Maximum Salary",
       "salaryMaxPlaceholder": "e.g. 20000000",
       "currency": "Currency",
+      "appliedAt": "Applied Date",
+      "appliedAtPlaceholder": "Select applied date...",
       "deadline": "Deadline",
       "jobUrl": "Job URL",
       "jobUrlPlaceholder": "https://...",

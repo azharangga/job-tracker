@@ -6,7 +6,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/lib/toast";
-import { Plus, Search, Filter, ArrowUpDown, ExternalLink, MoreVertical, Trash2, Eye, Building2, MapPin } from "lucide-react";
+import { Plus, Search, Filter, ArrowUpDown, ExternalLink, MoreVertical, Trash2, Eye, Building2, MapPin, Pencil } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { CompanyAvatar } from "@/components/common/CompanyAvatar";
 import { StatusBadge, PriorityBadge } from "@/components/common/badges";
@@ -31,6 +31,7 @@ import {
   listApplications,
   listCompanies,
   createApplication,
+  updateApplication,
   deleteApplication,
   listContacts,
 } from "@/services";
@@ -58,6 +59,8 @@ export function ApplicationsListPage() {
   const pageSize = 10;
 
   const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [form, setForm] = useState({
     position: "",
@@ -72,6 +75,7 @@ export function ApplicationsListPage() {
     salary_max: "",
     currency: "IDR",
     location: "",
+    applied_at: "",
     deadline: "",
     priority: "" as Priority | "",
     recruiter_id: "",
@@ -101,6 +105,7 @@ export function ApplicationsListPage() {
         salary_max: form.salary_max ? parseFloat(form.salary_max) : null,
         currency: form.currency || null,
         location: form.location || null,
+        applied_at: form.applied_at || null,
         deadline: form.deadline || null,
         priority: (form.priority || null) as Priority | null,
         recruiter_id: form.recruiter_id || null,
@@ -123,6 +128,7 @@ export function ApplicationsListPage() {
         salary_max: "",
         currency: "IDR",
         location: "",
+        applied_at: "",
         deadline: "",
         priority: "" as Priority | "",
         recruiter_id: "",
@@ -135,6 +141,71 @@ export function ApplicationsListPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const updateMut = useMutation({
+    mutationFn: () => {
+      if (!editingId) throw new Error("No application selected");
+      const tagsArray = form.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      return updateApplication(editingId, {
+        position: form.position,
+        company_id: form.company_id || null,
+        status: form.status,
+        rejected_at_stage: form.status === "rejected" ? (form.rejected_at_stage || "applied") as AppStatus : null,
+        work_mode: (form.work_mode || null) as WorkMode | null,
+        employment_type: (form.employment_type || null) as EmploymentType | null,
+        platform: form.platform || null,
+        job_url: form.job_url || null,
+        career_url: form.career_url || null,
+        salary_min: form.salary_min ? parseFloat(form.salary_min) : null,
+        salary_max: form.salary_max ? parseFloat(form.salary_max) : null,
+        currency: form.currency || null,
+        location: form.location || null,
+        applied_at: form.applied_at || null,
+        deadline: form.deadline || null,
+        priority: (form.priority || null) as Priority | null,
+        recruiter_id: form.recruiter_id || null,
+        tags: tagsArray,
+        notes: form.notes || null,
+      } as Partial<Application>);
+    },
+    onSuccess: () => {
+      toast.success(t("common.save"));
+      setOpenEdit(false);
+      setEditingId(null);
+      void qc.invalidateQueries({ queryKey: ["applications"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const handleStartEdit = (a: Application) => {
+    setEditingId(a.id);
+    setForm({
+      position: a.position || "",
+      company_id: a.company_id || "",
+      status: a.status || "wishlist",
+      work_mode: a.work_mode || "",
+      employment_type: a.employment_type || "",
+      platform: a.platform || "",
+      job_url: a.job_url || "",
+      career_url: a.career_url || "",
+      salary_min: a.salary_min !== null && a.salary_min !== undefined ? String(a.salary_min) : "",
+      salary_max: a.salary_max !== null && a.salary_max !== undefined ? String(a.salary_max) : "",
+      currency: a.currency || "IDR",
+      location: a.location || "",
+      applied_at: a.applied_at || "",
+      deadline: a.deadline || "",
+      priority: a.priority || "",
+      recruiter_id: a.recruiter_id || "",
+      tags: a.tags ? a.tags.join(", ") : "",
+      notes: a.notes || "",
+      rejected_at_stage: a.rejected_at_stage || "",
+    });
+    setOpenEdit(true);
+  };
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => deleteApplication(id),
@@ -184,7 +255,12 @@ export function ApplicationsListPage() {
         count={data.length}
         actions={
           <button
-            onClick={() => setOpenCreate(true)}
+            onClick={() => {
+              setForm({
+                position: "", company_id: "", status: "wishlist", work_mode: "", employment_type: "", platform: "", job_url: "", career_url: "", salary_min: "", salary_max: "", currency: "IDR", location: "", applied_at: "", deadline: "", priority: "", recruiter_id: "", tags: "", notes: "", rejected_at_stage: "",
+              });
+              setOpenCreate(true);
+            }}
             className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-active transition-colors cursor-pointer shadow-soft"
           >
             <Plus className="h-4 w-4" strokeWidth={2} />
@@ -239,12 +315,13 @@ export function ApplicationsListPage() {
         <>
           {/* Desktop table */}
           <div className="hidden md:block rounded-lg bg-surface border border-hairline shadow-soft overflow-hidden">
-            <div className="grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1.1fr_1.2fr_32px] gap-4 px-5 py-3 border-b border-hairline bg-surface-muted/50 text-eyebrow text-ink-muted">
+            <div className="grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1fr_1fr_1.2fr_32px] gap-4 px-5 py-3 border-b border-hairline bg-surface-muted/50 text-eyebrow text-ink-muted">
               <span>#</span>
               <span>{t("applications.positionCompany")}</span>
               <span>{t("applications.status")}</span>
               <span>{t("applications.workModeHeader", { defaultValue: "WORK MODE" })}</span>
               <span>{t("applications.jobTypeHeader", { defaultValue: "JOB TYPE" })}</span>
+              <span>{t("applications.form.appliedAt")}</span>
               <span>{t("applications.jobPosting")}</span>
               <span></span>
             </div>
@@ -262,7 +339,7 @@ export function ApplicationsListPage() {
                   >
                     <Link
                       href={`/applications/${a.id}`}
-                      className="grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1.1fr_1.2fr_32px] items-center gap-4 px-5 py-3.5 hover:bg-surface-muted/50 transition-colors"
+                      className="grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1fr_1fr_1.2fr_32px] items-center gap-4 px-5 py-3.5 hover:bg-surface-muted/50 transition-colors"
                     >
                       <span className="text-xs font-semibold text-ink-muted tabular-nums">{(page - 1) * pageSize + i + 1}</span>
                       <div className="flex items-center gap-3 min-w-0">
@@ -291,6 +368,7 @@ export function ApplicationsListPage() {
                       <div><StatusBadge status={a.status} /></div>
                       <div className="text-sm text-ink-secondary">{a.work_mode ? WORK_MODE_LABELS[a.work_mode] : "-"}</div>
                       <div className="text-sm text-ink-secondary">{a.employment_type ? EMPLOYMENT_TYPE_LABELS[a.employment_type] : "-"}</div>
+                      <div className="text-sm text-ink-secondary">{a.applied_at ? formatDate(a.applied_at, "d MMM yyyy") : "-"}</div>
                       <div className="text-sm">
                         {a.job_url || a.career_url ? (
                           <a
@@ -321,6 +399,10 @@ export function ApplicationsListPage() {
                               <Eye className="h-3.5 w-3.5 mr-2" />
                               {t("common.view")}
                             </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStartEdit(a)}>
+                            <Pencil className="h-3.5 w-3.5 mr-2" />
+                            {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setConfirmId(a.id)} className="text-destructive focus:text-destructive">
                             <Trash2 className="h-3.5 w-3.5 mr-2" />
@@ -363,7 +445,7 @@ export function ApplicationsListPage() {
                       <StatusBadge status={a.status} />
                       {a.work_mode && <span className="text-[11px] text-ink-muted">· {WORK_MODE_LABELS[a.work_mode]}</span>}
                       {a.employment_type && <span className="text-[11px] text-ink-muted">· {EMPLOYMENT_TYPE_LABELS[a.employment_type]}</span>}
-                      {a.applied_at && <span className="text-[11px] text-ink-faint">· {formatDate(a.applied_at, "MMM d")}</span>}
+                      {a.applied_at && <span className="text-[11px] text-ink-faint">· {formatDate(a.applied_at, "d MMM")}</span>}
                     </div>
                   </Link>
                   <DropdownMenu>
@@ -371,11 +453,21 @@ export function ApplicationsListPage() {
                       <MoreVertical className="h-3.5 w-3.5" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setConfirmId(a.id)} className="text-destructive focus:text-destructive">
-                        <Trash2 className="h-3.5 w-3.5 mr-2" />
-                        {t("common.delete")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/applications/${a.id}`}>
+                            <Eye className="h-3.5 w-3.5 mr-2" />
+                            {t("common.view")}
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStartEdit(a)}>
+                          <Pencil className="h-3.5 w-3.5 mr-2" />
+                          {t("common.edit")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setConfirmId(a.id)} className="text-destructive focus:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5 mr-2" />
+                          {t("common.delete")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
               </li>
@@ -414,12 +506,42 @@ export function ApplicationsListPage() {
 
       <FormDialog
         open={openCreate}
-        onOpenChange={setOpenCreate}
+        onOpenChange={(open) => {
+          if (!open) {
+            setForm({
+              position: "", company_id: "", status: "wishlist", work_mode: "", employment_type: "", platform: "", job_url: "", career_url: "", salary_min: "", salary_max: "", currency: "IDR", location: "", applied_at: "", deadline: "", priority: "", recruiter_id: "", tags: "", notes: "", rejected_at_stage: "",
+            });
+          }
+          setOpenCreate(open);
+        }}
         title={t("applications.new")}
         submitLabel={t("common.create")}
         onSubmit={async () => {
           if (!form.position.trim()) { toast.error(t("common.required")); return; }
           await createMut.mutateAsync();
+        }}
+        className="max-w-2xl sm:max-w-4xl"
+      >
+        <ApplicationFormFields
+          form={form}
+          setForm={setForm}
+          companies={companies.data ?? []}
+          contacts={contacts.data ?? []}
+          showDetailsTextareas={false}
+        />
+      </FormDialog>
+
+      <FormDialog
+        open={openEdit}
+        onOpenChange={(open) => {
+          if (!open) setEditingId(null);
+          setOpenEdit(open);
+        }}
+        title={t("applications.form.editTitle")}
+        submitLabel={t("common.save")}
+        onSubmit={async () => {
+          if (!form.position.trim()) { toast.error(t("common.required")); return; }
+          await updateMut.mutateAsync();
         }}
         className="max-w-2xl sm:max-w-4xl"
       >
