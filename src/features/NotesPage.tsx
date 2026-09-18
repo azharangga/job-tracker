@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
 import ReactMarkdown from "react-markdown";
-import { Plus, MoreVertical, Trash2, StickyNote } from "lucide-react";
+import { Plus, MoreVertical, Trash2, StickyNote, Search } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { EmptyState } from "@/components/common/EmptyState";
 import { FormDialog } from "@/components/common/FormDialog";
@@ -29,11 +29,18 @@ export function NotesPage() {
   const [openCreate, setOpenCreate] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", body_markdown: "" });
+  const [q, setQ] = useState("");
+
+  const filteredNotes = useMemo(() => {
+    if (!q) return data;
+    const term = q.toLowerCase();
+    return data.filter((n) => n.title.toLowerCase().includes(term) || n.body_markdown.toLowerCase().includes(term));
+  }, [data, q]);
 
   useEffect(() => {
-    if (!selectedId && data.length > 0) setSelectedId(data[0].id);
-  }, [data, selectedId]);
-  const selected = data.find((n) => n.id === selectedId) ?? data[0];
+    if (!selectedId && filteredNotes.length > 0) setSelectedId(filteredNotes[0].id);
+  }, [filteredNotes, selectedId]);
+  const selected = filteredNotes.find((n) => n.id === selectedId) ?? filteredNotes[0];
 
   const createMut = useMutation({
     mutationFn: () =>
@@ -79,10 +86,27 @@ export function NotesPage() {
       {data.length === 0 ? (
         <EmptyState icon={<StickyNote />} title={t("empty.title")} description={t("empty.description")} />
       ) : (
+        <>
+          {/* Filter bar */}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px] sm:min-w-[240px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint pointer-events-none" strokeWidth={1.75} />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={t("notes.searchPlaceholder", { defaultValue: "Cari catatan…" })}
+                className="w-full h-9 pl-9 pr-3 rounded-md bg-surface border border-hairline text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+              />
+            </div>
+          </div>
+          
+          {filteredNotes.length === 0 ? (
+            <EmptyState icon={<StickyNote />} title={t("empty.title")} description={t("empty.description")} />
+          ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 min-h-[520px]">
           <div className="rounded-lg bg-surface border border-hairline shadow-soft overflow-hidden">
-            <ul className="divide-y divide-hairline max-h-[70vh] overflow-y-auto">
-              {data.map((n) => (
+            <ul className="divide-y divide-hairline max-h-[70vh] overflow-y-auto custom-scrollbar">
+              {filteredNotes.map((n) => (
                 <li key={n.id} className="relative">
                   <button
                     onClick={() => setSelectedId(n.id)}
@@ -130,6 +154,8 @@ export function NotesPage() {
             )}
           </div>
         </div>
+          )}
+        </>
       )}
 
       <FormDialog

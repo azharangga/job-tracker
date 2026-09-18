@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Job Tracker",
-    "tagline": "Personal workspace",
+    "tagline": "Personal Workspace",
     "loading": "Loading…"
   },
   "nav": {
@@ -61,9 +61,18 @@
     "total": "total",
     "createdAt": "Created At"
   },
+  "pagination": {
+    "rowsPerPage": "Rows per page",
+    "page": "Page",
+    "noResults": "0 results",
+    "showingOf": "{{start}}–{{end}} of {{total}}"
+  },
   "shortlinks": {
     "desc": "Manage all your shortened URLs",
     "create": "Create New",
+    "searchPlaceholder": "Search alias, target URL…",
+    "active": "Active",
+    "inactive": "Inactive",
     "emptyTitle": "No Shortlinks",
     "emptyDesc": "You haven't created any shortened URLs yet.",
     "created": "Shortlink created successfully!",
@@ -254,6 +263,7 @@
     "title": "Companies",
     "description": "Track and organize companies you are targeting.",
     "new": "New company",
+    "searchPlaceholder": "Search company, industry, location…",
     "tracked": "{{count}} companies tracked",
     "applications": "Applications",
     "form": {
@@ -273,6 +283,7 @@
     "title": "Contacts",
     "description": "Keep track of recruiters, HRs, and professional referrals.",
     "new": "New contact",
+    "searchPlaceholder": "Search name, role, email, company…",
     "form": {
       "name": "Name",
       "namePlaceholder": "e.g. Jane Doe",
@@ -292,6 +303,7 @@
     "title": "Tasks",
     "description": "Manage your daily todo lists and application follow-ups.",
     "new": "New task",
+    "searchPlaceholder": "Search tasks, companies…",
     "form": {
       "title": "Title",
       "titlePlaceholder": "What needs to be done?",
@@ -357,6 +369,7 @@
     "title": "Notes",
     "description": "Write down interview prep notes, feedback, and reminders.",
     "new": "New note",
+    "searchPlaceholder": "Search notes…",
     "form": {
       "title": "Title",
       "titlePlaceholder": "e.g. Interview preparation, Questions for HR",
@@ -370,6 +383,7 @@
     "title": "Documents",
     "upload": "Upload",
     "description": "Store and manage your documents in one central hub.",
+    "searchPlaceholder": "Search documents, description…",
     "filter": {
       "all": "All"
     },

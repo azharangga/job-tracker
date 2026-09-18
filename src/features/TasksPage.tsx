@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
-import { Plus, MoreVertical, Trash2 } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Search } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { PriorityBadge } from "@/components/common/badges";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -27,6 +27,8 @@ export function TasksPage() {
   const [openCreate, setOpenCreate] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", due_at: "" });
+
+  const [q, setQ] = useState("");
 
   const createMut = useMutation({
     mutationFn: () =>
@@ -53,10 +55,12 @@ export function TasksPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const filteredData = q ? data.filter((t) => t.title.toLowerCase().includes(q.toLowerCase()) || (t.application?.company?.name ?? "").toLowerCase().includes(q.toLowerCase())) : data;
+
   const buckets: Record<string, Task[]> = {
     Overdue: [], Today: [], Tomorrow: [], "This Week": [], Later: [], "No date": [], Done: [],
   };
-  for (const task of data) {
+  for (const task of filteredData) {
     if (task.status === "done") { buckets.Done.push(task); continue; }
     if (!task.due_at) { buckets["No date"].push(task); continue; }
     const d = parseISO(task.due_at);
@@ -102,6 +106,23 @@ export function TasksPage() {
       {data.length === 0 ? (
         <EmptyState title={t("empty.title")} description={t("empty.description")} />
       ) : (
+        <>
+          {/* Filter bar */}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px] sm:min-w-[240px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint pointer-events-none" strokeWidth={1.75} />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={t("tasks.searchPlaceholder", { defaultValue: "Cari tugas, perusahaan…" })}
+                className="w-full h-9 pl-9 pr-3 rounded-md bg-surface border border-hairline text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+              />
+            </div>
+          </div>
+
+          {filteredData.length === 0 ? (
+            <EmptyState title={t("empty.title")} description={t("empty.description")} />
+          ) : (
         <div className="space-y-6">
           {Object.entries(buckets).map(([label, items]) =>
             items.length === 0 ? null : (
@@ -149,6 +170,8 @@ export function TasksPage() {
             ),
           )}
         </div>
+          )}
+        </>
       )}
 
       <FormDialog

@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
-import { Globe, MapPin, Plus, MoreVertical, Trash2, Edit } from "lucide-react";
+import { Globe, MapPin, Plus, MoreVertical, Trash2, Edit, Search, Filter } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { CompanyAvatar } from "@/components/common/CompanyAvatar";
 import { EmptyState } from "@/components/common/EmptyState";
+import { DataPagination } from "@/components/common/DataPagination";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -150,6 +152,32 @@ export function CompaniesPage() {
   }
 
   const list = companies.data ?? [];
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+
+  const [q, setQ] = useState("");
+  const [industryFilter, setIndustryFilter] = useState("all");
+
+  const industries = useMemo(() => {
+    const set = new Set<string>();
+    list.forEach((c) => {
+      if (c.industry) set.add(c.industry);
+    });
+    return Array.from(set).sort();
+  }, [list]);
+
+  const filtered = useMemo(() => {
+    return list.filter((c) => {
+      if (industryFilter !== "all" && c.industry !== industryFilter) return false;
+      if (q) {
+        const term = q.toLowerCase();
+        if (!c.name.toLowerCase().includes(term) && !(c.industry ?? "").toLowerCase().includes(term) && !(c.location ?? "").toLowerCase().includes(term)) return false;
+      }
+      return true;
+    });
+  }, [list, q, industryFilter]);
+
+  const paginated = useMemo(() => filtered.slice((page - 1) * pageSize, page * pageSize), [filtered, page, pageSize]);
 
   return (
     <AppShell>
@@ -171,8 +199,42 @@ export function CompaniesPage() {
       {list.length === 0 ? (
         <EmptyState title={t("empty.title")} description={t("empty.description")} />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {list.map((c) => (
+        <>
+          {/* Filter bar */}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px] sm:min-w-[240px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint pointer-events-none" strokeWidth={1.75} />
+              <input
+                value={q}
+                onChange={(e) => { setQ(e.target.value); setPage(1); }}
+                placeholder={t("companies.searchPlaceholder", { defaultValue: "Cari perusahaan, industri, lokasi…" })}
+                className="w-full h-9 pl-9 pr-3 rounded-md bg-surface border border-hairline text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+              />
+            </div>
+            {industries.length > 0 && (
+              <Select value={industryFilter} onValueChange={(v) => { setIndustryFilter(v); setPage(1); }}>
+                <SelectTrigger className="h-9 w-auto min-w-[140px] rounded-md bg-surface border border-hairline text-sm text-ink hover:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-primary transition-colors cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-3.5 w-3.5 text-ink-faint shrink-0" strokeWidth={1.75} />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all", { defaultValue: "Semua" })} {t("companies.form.industry")}</SelectItem>
+                  {industries.map((ind) => (
+                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          {filtered.length === 0 ? (
+            <EmptyState title={t("empty.title")} description={t("empty.description")} />
+          ) : (
+            <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {paginated.map((c) => (
             <div key={c.id} className="rounded-lg bg-surface border border-hairline p-4 sm:p-5 shadow-soft hover:shadow-elevated transition-shadow">
               <div className="flex items-start gap-3">
                 <CompanyAvatar name={c.name} logoUrl={c.logo_url} size={44} />
@@ -222,6 +284,10 @@ export function CompaniesPage() {
             </div>
           ))}
         </div>
+        <DataPagination total={filtered.length} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(n) => { setPageSize(n); setPage(1); }} />
+        </>
+        )}
+        </>
       )}
 
       <FormDialog

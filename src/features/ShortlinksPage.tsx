@@ -4,13 +4,17 @@ import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/lib/toast";
-import { Plus, Trash2, Copy, Link as LinkIcon, Edit2 } from "lucide-react";
+import { Plus, Trash2, Copy, Link as LinkIcon, Edit2, MoreVertical, Eye, Pencil, Search, Filter } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { EmptyState } from "@/components/common/EmptyState";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { formatRelative } from "@/lib/format";
+import { DataPagination } from "@/components/common/DataPagination";
+import { TruncateWithTooltip } from "@/components/common/TruncateWithTooltip";
 
 type Shortlink = {
   id: string;
@@ -61,6 +65,23 @@ export function ShortlinksPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ target_url: "", custom_alias: "" });
   const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+
+  const filteredShortlinks = shortlinks.filter((link) => {
+    if (statusFilter === "active" && !link.is_active) return false;
+    if (statusFilter === "inactive" && link.is_active) return false;
+    if (q) {
+      const term = q.toLowerCase();
+      if (!link.short_code.toLowerCase().includes(term) && !link.target_url.toLowerCase().includes(term)) return false;
+    }
+    return true;
+  });
+
+  const paginatedShortlinks = filteredShortlinks.slice((page - 1) * pageSize, page * pageSize);
 
   const createMut = useMutation({
     mutationFn: async (payload: { url: string; customAlias: string }) => {
@@ -216,42 +237,77 @@ export function ShortlinksPage() {
           }
         />
       ) : (
-        <div className="bg-surface border border-hairline rounded-xl overflow-hidden overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-surface-muted border-b border-hairline text-ink-muted">
-              <tr>
-                <th className="px-5 py-3 font-medium w-12 text-center">#</th>
-                <th className="px-5 py-3 font-medium">Short Link</th>
-                <th className="px-5 py-3 font-medium">Target URL</th>
-                <th className="px-5 py-3 font-medium">{t("common.createdAt", "Created At")}</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium w-24">{t("common.actions", "Actions")}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-hairline">
-              {shortlinks.map((link, index) => (
-                <tr key={link.id} className="hover:bg-surface-muted/50 transition-colors">
-                  <td className="px-5 py-4 text-ink-muted text-center">{index + 1}</td>
-                  <td className="px-5 py-4 font-medium text-ink flex items-center gap-2">
-                    <span className="bg-primary/10 text-primary px-2 py-1 rounded-md text-xs font-mono">
-                      /s/{link.short_code}
-                    </span>
-                    <button
-                      onClick={() => copyToClipboard(link.short_code)}
-                      className="text-ink-muted hover:text-ink transition-colors"
-                      title={t("common.copy", "Copy")}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </button>
-                  </td>
-                  <td className="px-5 py-4 text-ink-secondary truncate max-w-[300px]">
-                    <a href={link.target_url} target="_blank" rel="noopener noreferrer" className="hover:underline text-primary" title={link.target_url}>
-                      {link.target_url}
-                    </a>
-                  </td>
-                  <td className="px-5 py-4 text-ink-secondary text-xs">
-                    {formatRelative(link.created_at)}
-                  </td>
+        <>
+          {/* Filter bar */}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px] sm:min-w-[240px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint pointer-events-none" strokeWidth={1.75} />
+              <input
+                value={q}
+                onChange={(e) => { setQ(e.target.value); setPage(1); }}
+                placeholder={t("shortlinks.searchPlaceholder", { defaultValue: "Cari alias, target URL…" })}
+                className="w-full h-9 pl-9 pr-3 rounded-md bg-surface border border-hairline text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as any); setPage(1); }}>
+              <SelectTrigger className="h-9 w-auto min-w-[140px] rounded-md bg-surface border border-hairline text-sm text-ink hover:bg-surface-muted focus:outline-none focus:ring-1 focus:ring-primary transition-colors cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-3.5 w-3.5 text-ink-faint shrink-0" strokeWidth={1.75} />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("common.all", { defaultValue: "Semua" })} {t("common.status", { defaultValue: "Status" })}</SelectItem>
+                <SelectItem value="active">{t("shortlinks.active", { defaultValue: "Aktif" })}</SelectItem>
+                <SelectItem value="inactive">{t("shortlinks.inactive", { defaultValue: "Nonaktif" })}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {filteredShortlinks.length === 0 ? (
+            <EmptyState
+              icon={<LinkIcon className="h-8 w-8 text-ink-faint" />}
+              title={t("empty.title")}
+              description={t("empty.description")}
+            />
+          ) : (
+        <div className="bg-surface border border-hairline rounded-xl overflow-hidden">
+          <div className="overflow-x-auto scrollbar-thin">
+            <table className="w-full text-left text-sm whitespace-nowrap min-w-[720px]">
+              <thead className="bg-surface-muted border-b border-hairline text-ink-muted text-eyebrow">
+                <tr>
+                  <th className="px-5 py-3 font-medium w-12 text-center sticky left-0 bg-surface-muted z-20 border-r border-hairline shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)]">#</th>
+                  <th className="px-5 py-3 font-medium">Short Link</th>
+                  <th className="px-5 py-3 font-medium">Target URL</th>
+                  <th className="px-5 py-3 font-medium">{t("common.createdAt", "Created At")}</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium w-24">{t("common.actions", "Actions")}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-hairline">
+                {paginatedShortlinks.map((link, index) => (
+                  <tr key={link.id} className="hover:bg-surface-muted/50 transition-colors group">
+                    <td className="px-5 py-4 text-ink-muted text-center tabular-nums sticky left-0 bg-surface z-20 border-r border-hairline shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)]">{(page - 1) * pageSize + index + 1}</td>
+                    <td className="px-5 py-4 font-medium text-ink">
+                      <div className="flex items-center gap-2">
+                        <span className="bg-primary/10 text-primary px-2 py-1 rounded-md text-xs font-mono">
+                          /s/{link.short_code}
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(link.short_code)}
+                          className="text-ink-muted hover:text-ink transition-colors shrink-0"
+                          title={t("common.copy", "Copy")}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-ink-secondary max-w-[280px]">
+                      <TruncateWithTooltip text={link.target_url} className="text-primary hover:underline" />
+                    </td>
+                    <td className="px-5 py-4 text-ink-secondary text-xs">
+                      {formatRelative(link.created_at)}
+                    </td>
                   <td className="px-5 py-4">
                     <button
                       onClick={() => toggleStatusMut.mutate({ id: link.id, is_active: !link.is_active })}
@@ -267,32 +323,32 @@ export function ShortlinksPage() {
                     </button>
                   </td>
                   <td className="px-5 py-4">
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => {
-                          setEditId(link.id);
-                          setForm({ target_url: link.target_url, custom_alias: link.short_code });
-                          setOpenCreate(true);
-                        }}
-                        className="h-8 w-8 rounded-md flex items-center justify-center text-ink-secondary hover:bg-surface-muted hover:text-ink transition-colors"
-                        title={t("common.edit", "Edit")}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setConfirmId(link.id)}
-                        className="h-8 w-8 rounded-md flex items-center justify-center text-red-500 hover:bg-red-500/10 transition-colors"
-                        title={t("common.delete", "Delete")}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="h-7 w-7 grid place-items-center rounded-md bg-surface border border-hairline text-ink-faint hover:text-ink hover:bg-surface-muted transition-colors">
+                        <MoreVertical className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => { void navigator.clipboard.writeText(`${window.location.origin}/s/${link.short_code}`); toast.success(t("common.copied", "Copied to clipboard")); }}>
+                          <Copy className="h-3.5 w-3.5 mr-2" />{t("common.copy", "Copy")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => { setEditId(link.id); setForm({ target_url: link.target_url, custom_alias: link.short_code }); setOpenCreate(true); }}>
+                          <Pencil className="h-3.5 w-3.5 mr-2" />{t("common.edit")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setConfirmId(link.id)} className="text-destructive focus:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5 mr-2" />{t("common.delete")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
+          <DataPagination total={filteredShortlinks.length} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(n) => { setPageSize(n); setPage(1); }} />
         </div>
+          )}
+        </>
       )}
 
       {/* Create Dialog */}

@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Job Tracker",
-    "tagline": "Ruang kerja pribadi",
+    "tagline": "Ruang Kerja Pribadi",
     "loading": "Memuat…"
   },
   "nav": {
@@ -60,6 +60,12 @@
     "shown": "ditampilkan",
     "total": "total",
     "createdAt": "Dibuat Pada"
+  },
+  "pagination": {
+    "rowsPerPage": "Baris per halaman",
+    "page": "Halaman",
+    "noResults": "0 hasil",
+    "showingOf": "{{start}}–{{end}} dari {{total}}"
   },
   "footer": {
     "copyright": "© {{year}} Job Tracker - Ruang kerja pribadi",
@@ -241,6 +247,7 @@
     "title": "Perusahaan",
     "description": "Lacak dan kelola perusahaan target lamaran Anda.",
     "new": "Perusahaan baru",
+    "searchPlaceholder": "Cari perusahaan, industri, lokasi…",
     "tracked": "{{count}} perusahaan terlacak",
     "applications": "Lamaran",
     "form": {
@@ -260,6 +267,7 @@
     "title": "Kontak",
     "description": "Simpan kontak perekrut, HR, dan referensi profesional Anda.",
     "new": "Kontak baru",
+    "searchPlaceholder": "Cari nama, peran, email, perusahaan…",
     "form": {
       "name": "Nama",
       "namePlaceholder": "Contoh: Jane Doe",
@@ -279,6 +287,7 @@
     "title": "Tugas",
     "description": "Kelola agenda tugas harian dan follow-up lamaran Anda.",
     "new": "Tugas baru",
+    "searchPlaceholder": "Cari tugas, perusahaan…",
     "form": {
       "title": "Judul",
       "titlePlaceholder": "Apa yang perlu dilakukan?",
@@ -344,6 +353,7 @@
     "title": "Catatan",
     "description": "Tulis catatan persiapan wawancara, umpan balik, dan pengingat.",
     "new": "Catatan baru",
+    "searchPlaceholder": "Cari catatan…",
     "form": {
       "title": "Judul",
       "titlePlaceholder": "Contoh: Persiapan wawancara, Pertanyaan untuk HR",
@@ -357,6 +367,7 @@
     "title": "Dokumen",
     "upload": "Unggah",
     "description": "Simpan dan kelola dokumen Anda secara terpusat.",
+    "searchPlaceholder": "Cari dokumen, deskripsi…",
     "filter": {
       "all": "Semua"
     },
@@ -406,6 +417,9 @@
   "shortlinks": {
     "desc": "Kelola semua URL yang diperpendek",
     "create": "Buat Baru",
+    "searchPlaceholder": "Cari alias, target URL…",
+    "active": "Aktif",
+    "inactive": "Nonaktif",
     "emptyTitle": "Tidak ada Shortlinks",
     "emptyDesc": "Anda belum membuat URL yang diperpendek.",
     "created": "Shortlink berhasil dibuat!",

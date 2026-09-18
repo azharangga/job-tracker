@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Upload, Trash2, Download, Pencil, ZoomIn, ZoomOut, RotateCcw, Share2, Loader2 } from "lucide-react";
+import { FileText, Upload, Trash2, Download, Pencil, ZoomIn, ZoomOut, RotateCcw, Share2, Loader2, Search } from "lucide-react";
 import * as XLSX from "xlsx";
 import { AppShell, PageHeader } from "@/components/layout/AppShell";
 import { StickerBadge } from "@/components/common/StickerBadge";
@@ -11,6 +11,7 @@ import { listDocuments, createDocument, deleteDocument, uploadDocumentFile, upda
 import { DOCUMENT_KIND_LABELS } from "@/constants";
 import { fileSize, formatDate } from "@/lib/format";
 import type { DocumentKind } from "@/types";
+import { TruncateWithTooltip } from "@/components/common/TruncateWithTooltip";
 import { FormDialog } from "@/components/common/FormDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { RichTextEditor } from "@/components/common/RichTextEditor";
@@ -54,6 +55,7 @@ export function DocumentsPage() {
   const auth = useAuth();
   const { data = [] } = useQuery({ queryKey: ["documents"], queryFn: listDocuments });
   const [filter, setFilter] = useState<DocumentKind | "all">("all");
+  const [q, setQ] = useState("");
   
   const [openCreate, setOpenCreate] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -87,7 +89,14 @@ export function DocumentsPage() {
   const [previewStoragePath, setPreviewStoragePath] = useState("");
   const [zoom, setZoom] = useState(100);
 
-  const items = filter === "all" ? data : data.filter((d) => d.kind === filter);
+  const items = data.filter((d) => {
+    if (filter !== "all" && d.kind !== filter) return false;
+    if (q) {
+      const term = q.toLowerCase();
+      if (!d.name.toLowerCase().includes(term) && !(d.description ?? "").toLowerCase().includes(term)) return false;
+    }
+    return true;
+  });
 
   const handleOpenPreview = async (name: string, path: string, mime: string) => {
     setPreviewName(name);
@@ -306,11 +315,23 @@ export function DocumentsPage() {
         }
       />
 
-      <div className="mb-4 flex flex-wrap gap-1.5">
-        <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>{t("documents.filter.all")}</FilterChip>
-        {(Object.keys(DOCUMENT_KIND_LABELS) as DocumentKind[]).map((k) => (
-          <FilterChip key={k} active={filter === k} onClick={() => setFilter(k)}>{DOCUMENT_KIND_LABELS[k]}</FilterChip>
-        ))}
+      <div className="mb-4 space-y-3">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint pointer-events-none" strokeWidth={1.75} />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t("documents.searchPlaceholder", { defaultValue: "Cari dokumen, deskripsi…" })}
+            className="w-full h-9 pl-9 pr-3 rounded-md bg-surface border border-hairline text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
+          <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>{t("documents.filter.all")}</FilterChip>
+          {(Object.keys(DOCUMENT_KIND_LABELS) as DocumentKind[]).map((k) => (
+            <FilterChip key={k} active={filter === k} onClick={() => setFilter(k)}>{DOCUMENT_KIND_LABELS[k]}</FilterChip>
+          ))}
+        </div>
       </div>
 
       {items.length === 0 ? (
@@ -329,13 +350,12 @@ export function DocumentsPage() {
                     <FileText className="h-5 w-5" strokeWidth={1.75} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <button
+                    <div
                       onClick={() => handleViewDocument(d)}
                       className="text-sm font-semibold text-ink hover:text-primary transition-colors truncate text-left w-full cursor-pointer block"
-                      title={d.name}
                     >
-                      {d.name}
-                    </button>
+                      <TruncateWithTooltip text={d.name} className="text-sm font-semibold text-ink" />
+                    </div>
                     <div className="text-xs text-ink-muted mt-0.5">{fileSize(d.size)}</div>
                   </div>
                 </div>

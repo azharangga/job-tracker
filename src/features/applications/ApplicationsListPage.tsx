@@ -35,7 +35,9 @@ import {
   deleteApplication,
   listContacts,
 } from "@/services";
-import { formatDate, formatCurrency } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { DataPagination } from "@/components/common/DataPagination";
+import { TruncateWithTooltip } from "@/components/common/TruncateWithTooltip";
 import { APP_STATUS_LABELS, APP_STATUS_ORDER, WORK_MODE_LABELS, EMPLOYMENT_TYPE_LABELS } from "@/constants";
 import type { AppStatus, WorkMode, EmploymentType, Priority, Application } from "@/types";
 import { cn } from "@/lib/utils";
@@ -56,7 +58,7 @@ export function ApplicationsListPage() {
 
   // Pagination State
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -315,80 +317,85 @@ export function ApplicationsListPage() {
         <>
           {/* Desktop table */}
           <div className="hidden md:block rounded-lg bg-surface border border-hairline shadow-soft overflow-hidden">
-            <div className="grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1fr_1fr_1.2fr_32px] gap-4 px-5 py-3 border-b border-hairline bg-surface-muted/50 text-eyebrow text-ink-muted">
-              <span>#</span>
-              <span>{t("applications.positionCompany")}</span>
-              <span>{t("applications.status")}</span>
-              <span>{t("applications.workModeHeader", { defaultValue: "WORK MODE" })}</span>
-              <span>{t("applications.jobTypeHeader", { defaultValue: "JOB TYPE" })}</span>
-              <span>{t("applications.form.appliedAt")}</span>
-              <span>{t("applications.jobPosting")}</span>
-              <span></span>
-            </div>
+            <div className="overflow-x-auto scrollbar-thin">
+              <div className="min-w-[1020px]">
+                <div className="grid grid-cols-[48px_minmax(180px,2fr)_130px_110px_110px_120px_120px_80px_40px] gap-3 px-5 py-3 border-b border-hairline bg-surface-muted/50 text-eyebrow text-ink-muted whitespace-nowrap">
+                  <span className="sticky left-0 bg-surface-muted z-20 border-r border-hairline shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] px-1">#</span>
+                  <span>{t("applications.positionCompany")}</span>
+                  <span>{t("applications.status")}</span>
+                  <span>{t("applications.workModeHeader", { defaultValue: "WORK MODE" })}</span>
+                  <span>{t("applications.jobTypeHeader", { defaultValue: "JOB TYPE" })}</span>
+                  <span>{t("applications.form.appliedAt")}</span>
+                  <span>{t("applications.form.deadline")}</span>
+                  <span>{t("applications.jobPosting")}</span>
+                  <span></span>
+                </div>
 
-            <ul>
-              <AnimatePresence initial={false}>
-                {paginatedItems.map((a, i) => (
-                  <motion.li
-                    key={a.id}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ delay: Math.min(i * 0.02, 0.2), duration: 0.16 }}
-                    className="border-b border-hairline last:border-0 relative group"
-                  >
-                    <Link
-                      href={`/applications/${a.id}`}
-                      className="grid grid-cols-[48px_minmax(240px,3fr)_1.2fr_1fr_1fr_1fr_1.2fr_32px] items-center gap-4 px-5 py-3.5 hover:bg-surface-muted/50 transition-colors"
-                    >
-                      <span className="text-xs font-semibold text-ink-muted tabular-nums">{(page - 1) * pageSize + i + 1}</span>
-                      <div className="flex items-center gap-3 min-w-0">
-                        <CompanyAvatar name={a.company?.name ?? a.position} logoUrl={a.company?.logo_url} size={36} />
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium text-ink truncate flex items-center gap-2">
-                            {a.position}
-                            {a.priority && a.priority !== "medium" && <PriorityBadge priority={a.priority} />}
+                <ul>
+                  <AnimatePresence initial={false}>
+                    {paginatedItems.map((a, i) => (
+                      <motion.li
+                        key={a.id}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ delay: Math.min(i * 0.02, 0.2), duration: 0.16 }}
+                        className="border-b border-hairline last:border-0 relative group"
+                      >
+                        <Link
+                          href={`/applications/${a.id}`}
+                          className="grid grid-cols-[48px_minmax(180px,2fr)_130px_110px_110px_120px_120px_80px_40px] items-center gap-3 px-5 py-3.5 hover:bg-surface-muted/50 transition-colors"
+                        >
+                          <span className="text-xs font-semibold text-ink-muted tabular-nums truncate sticky left-0 bg-surface z-20 border-r border-hairline shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] px-1">
+                            {(page - 1) * pageSize + i + 1}
+                          </span>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <CompanyAvatar name={a.company?.name ?? a.position} logoUrl={a.company?.logo_url} size={36} />
+                            <div className="min-w-0 overflow-hidden">
+                              <div className="text-sm font-medium text-ink truncate flex items-center gap-2">
+                                <TruncateWithTooltip text={a.position} className="text-sm font-medium text-ink" />
+                                {a.priority && a.priority !== "medium" && <PriorityBadge priority={a.priority} />}
+                              </div>
+                              <div className="text-xs text-ink-muted flex items-center gap-3 mt-1 min-w-0 overflow-hidden">
+                                {a.company?.name && (
+                                  <span className="flex items-center gap-1 min-w-0 shrink truncate">
+                                    <Building2 className="h-3.5 w-3.5 text-ink-faint shrink-0" strokeWidth={1.75} />
+                                    <TruncateWithTooltip text={a.company.name} className="truncate" />
+                                  </span>
+                                )}
+                                {a.location && (
+                                  <span className="flex items-center gap-1 min-w-0 shrink truncate">
+                                    <MapPin className="h-3.5 w-3.5 text-ink-faint shrink-0" strokeWidth={1.75} />
+                                    <TruncateWithTooltip text={a.location} className="truncate" />
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-xs text-ink-muted flex items-center gap-3 mt-1 flex-wrap min-w-0">
-                            {a.company?.name && (
-                              <span className="flex items-center gap-1 min-w-0 truncate">
-                                <Building2 className="h-3.5 w-3.5 text-ink-faint shrink-0" strokeWidth={1.75} />
-                                <span className="truncate">{a.company.name}</span>
-                              </span>
-                            )}
-                            {a.location && (
-                              <span className="flex items-center gap-1 min-w-0 truncate">
-                                <MapPin className="h-3.5 w-3.5 text-ink-faint shrink-0" strokeWidth={1.75} />
-                                <span className="truncate">{a.location}</span>
-                              </span>
+                          <div className="min-w-0 overflow-hidden"><StatusBadge status={a.status} /></div>
+                          <div className="text-sm text-ink-secondary truncate min-w-0">{a.work_mode ? WORK_MODE_LABELS[a.work_mode] : "-"}</div>
+                          <div className="text-sm text-ink-secondary truncate min-w-0">{a.employment_type ? EMPLOYMENT_TYPE_LABELS[a.employment_type] : "-"}</div>
+                          <div className="text-sm text-ink-secondary truncate min-w-0">{a.applied_at ? formatDate(a.applied_at, "d MMM yyyy") : "-"}</div>
+                          <div className="text-sm text-ink-secondary truncate min-w-0">{a.deadline ? formatDate(a.deadline, "d MMM yyyy") : "-"}</div>
+                          <div className="text-sm min-w-0 truncate">
+                            {a.job_url || a.career_url ? (
+                              <a
+                                href={(a.job_url || a.career_url) ?? undefined}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center gap-1 text-primary hover:text-primary-active hover:underline font-semibold"
+                              >
+                                <span>Link</span>
+                                <ExternalLink className="h-3 w-3" strokeWidth={2} />
+                              </a>
+                            ) : (
+                              <span className="text-ink-faint">-</span>
                             )}
                           </div>
-                        </div>
-                      </div>
-                      <div><StatusBadge status={a.status} /></div>
-                      <div className="text-sm text-ink-secondary">{a.work_mode ? WORK_MODE_LABELS[a.work_mode] : "-"}</div>
-                      <div className="text-sm text-ink-secondary">{a.employment_type ? EMPLOYMENT_TYPE_LABELS[a.employment_type] : "-"}</div>
-                      <div className="text-sm text-ink-secondary">{a.applied_at ? formatDate(a.applied_at, "d MMM yyyy") : "-"}</div>
-                      <div className="text-sm">
-                        {a.job_url || a.career_url ? (
-                          <a
-                            href={(a.job_url || a.career_url) ?? undefined}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 text-primary hover:text-primary-active hover:underline font-semibold"
-                          >
-                            <span>Link</span>
-                            <ExternalLink className="h-3 w-3" strokeWidth={2} />
-                          </a>
-                        ) : (
-                          <span className="text-ink-faint">-</span>
-                        )}
-                      </div>
-                      {/* Empty cell placeholder to align with absolute dropdown menu */}
-                      <div className="w-8 h-7" />
-                    </Link>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                          <div className="w-8 h-7" />
+                        </Link>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
                       <DropdownMenu>
                         <DropdownMenuTrigger className="h-7 w-7 grid place-items-center rounded-md bg-surface border border-hairline text-ink-faint hover:text-ink hover:bg-surface-muted transition-colors">
                           <MoreVertical className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -413,94 +420,72 @@ export function ApplicationsListPage() {
                     </div>
                   </motion.li>
                 ))}
-              </AnimatePresence>
-            </ul>
+                </AnimatePresence>
+                </ul>
+              </div>
+            </div>
+            <DataPagination total={filtered.length} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(n) => { setPageSize(n); setPage(1); }} />
           </div>
 
           {/* Mobile cards */}
-          <ul className="md:hidden space-y-2">
-            {paginatedItems.map((a, i) => (
-              <li key={a.id} className="rounded-lg bg-surface border border-hairline p-3 shadow-soft">
-                <div className="flex items-start gap-3">
-                  <CompanyAvatar name={a.company?.name ?? a.position} logoUrl={a.company?.logo_url} size={36} />
-                  <Link href={`/applications/${a.id}`} className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-ink truncate">
-                      {(page - 1) * pageSize + i + 1}. {a.position}
-                    </div>
-                    <div className="text-xs text-ink-muted flex items-center gap-3 mt-1 flex-wrap">
-                      {a.company?.name && (
-                        <span className="flex items-center gap-1 min-w-0 truncate">
-                          <Building2 className="h-3 w-3 text-ink-faint shrink-0" strokeWidth={1.75} />
-                          <span className="truncate">{a.company.name}</span>
-                        </span>
-                      )}
-                      {a.location && (
-                        <span className="flex items-center gap-1 min-w-0 truncate">
-                          <MapPin className="h-3 w-3 text-ink-faint shrink-0" strokeWidth={1.75} />
-                          <span className="truncate">{a.location}</span>
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      <StatusBadge status={a.status} />
-                      {a.work_mode && <span className="text-[11px] text-ink-muted">· {WORK_MODE_LABELS[a.work_mode]}</span>}
-                      {a.employment_type && <span className="text-[11px] text-ink-muted">· {EMPLOYMENT_TYPE_LABELS[a.employment_type]}</span>}
-                      {a.applied_at && <span className="text-[11px] text-ink-faint">· {formatDate(a.applied_at, "d MMM")}</span>}
-                    </div>
-                  </Link>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="h-7 w-7 grid place-items-center rounded-md border border-hairline text-ink-faint">
-                      <MoreVertical className="h-3.5 w-3.5" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/applications/${a.id}`}>
-                            <Eye className="h-3.5 w-3.5 mr-2" />
-                            {t("common.view")}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStartEdit(a)}>
-                          <Pencil className="h-3.5 w-3.5 mr-2" />
-                          {t("common.edit")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setConfirmId(a.id)} className="text-destructive focus:text-destructive">
-                          <Trash2 className="h-3.5 w-3.5 mr-2" />
-                          {t("common.delete")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 border-t border-hairline pt-4">
-              <div className="text-xs text-ink-muted">
-                Menampilkan {startIndex + 1} - {endIndex} dari {totalItems} lamaran
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  disabled={page === 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="h-8 px-3 rounded-md border border-hairline text-xs font-semibold hover:bg-surface-muted transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed text-ink bg-surface"
-                >
-                  {t("calendar.previous")}
-                </button>
-                <div className="text-xs font-medium text-ink">
-                  Halaman {page} dari {totalPages}
-                </div>
-                <button
-                  disabled={page === totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="h-8 px-3 rounded-md border border-hairline text-xs font-semibold hover:bg-surface-muted transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed text-ink bg-surface"
-                >
-                  {t("calendar.next")}
-                </button>
-              </div>
-            </div>
-          )}
+          <div className="md:hidden space-y-3">
+            <ul className="space-y-2">
+              {paginatedItems.map((a, i) => (
+                <li key={a.id} className="rounded-lg bg-surface border border-hairline p-3 shadow-soft">
+                  <div className="flex items-start gap-3">
+                    <CompanyAvatar name={a.company?.name ?? a.position} logoUrl={a.company?.logo_url} size={36} />
+                    <Link href={`/applications/${a.id}`} className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-ink truncate">
+                        {(page - 1) * pageSize + i + 1}. {a.position}
+                      </div>
+                      <div className="text-xs text-ink-muted flex items-center gap-3 mt-1 flex-wrap">
+                        {a.company?.name && (
+                          <span className="flex items-center gap-1 min-w-0 truncate">
+                            <Building2 className="h-3 w-3 text-ink-faint shrink-0" strokeWidth={1.75} />
+                            <span className="truncate">{a.company.name}</span>
+                          </span>
+                        )}
+                        {a.location && (
+                          <span className="flex items-center gap-1 min-w-0 truncate">
+                            <MapPin className="h-3 w-3 text-ink-faint shrink-0" strokeWidth={1.75} />
+                            <span className="truncate">{a.location}</span>
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        <StatusBadge status={a.status} />
+                        {a.work_mode && <span className="text-[11px] text-ink-muted">· {WORK_MODE_LABELS[a.work_mode]}</span>}
+                        {a.employment_type && <span className="text-[11px] text-ink-muted">· {EMPLOYMENT_TYPE_LABELS[a.employment_type]}</span>}
+                        {a.applied_at && <span className="text-[11px] text-ink-faint">· {formatDate(a.applied_at, "d MMM")}</span>}
+                      </div>
+                    </Link>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="h-7 w-7 grid place-items-center rounded-md border border-hairline text-ink-faint">
+                        <MoreVertical className="h-3.5 w-3.5" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/applications/${a.id}`}>
+                              <Eye className="h-3.5 w-3.5 mr-2" />
+                              {t("common.view")}
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStartEdit(a)}>
+                            <Pencil className="h-3.5 w-3.5 mr-2" />
+                            {t("common.edit")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setConfirmId(a.id)} className="text-destructive focus:text-destructive">
+                            <Trash2 className="h-3.5 w-3.5 mr-2" />
+                            {t("common.delete")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <DataPagination total={filtered.length} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(n) => { setPageSize(n); setPage(1); }} />
+          </div>
         </>
       )}
 
