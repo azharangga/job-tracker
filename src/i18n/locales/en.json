@@ -212,7 +212,18 @@
       "inProgress": "In Progress",
       "offered": "Job Offer",
       "accepted": "Accepted",
+      "onboarding": "Onboarding",
       "rejected": "Rejected"
+    },
+    "stages": {
+      "title": "Manage Timeline Stages",
+      "manage": "Manage",
+      "desc": "Drag to reorder stages. Rename, add, or remove stages for this application.",
+      "add": "Add Stage",
+      "minError": "Minimum 1 stage required",
+      "reset": "Reset",
+      "saved": "Stages saved",
+      "placeholder": "Stage name"
     },
     "form": {
       "position": "Position",

@@ -1,16 +1,6 @@
 export type UUID = string;
 
-export type AppStatus =
-  | "wishlist"
-  | "applied"
-  | "hr_screening"
-  | "technical_test"
-  | "hr_interview"
-  | "user_interview"
-  | "final_interview"
-  | "offer"
-  | "accepted"
-  | "rejected";
+export type AppStatus = string;
 
 export type WorkMode = "remote" | "hybrid" | "onsite";
 export type EmploymentType =
@@ -126,6 +116,15 @@ export interface ActivityEntry {
   type: string;
   payload: Record<string, unknown>;
   created_at: string;
+}
+
+export interface ApplicationStage {
+  id: string;
+  application_id: string;
+  key: string;
+  label: string;
+  sort_order: number;
+  created_at?: string;
 }
 
 export interface ChecklistItem {

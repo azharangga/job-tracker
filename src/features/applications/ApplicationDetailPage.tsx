@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { ChevronLeft, ExternalLink, MapPin, Calendar, DollarSign, Building2, Pencil, Trash2, Check, X } from "lucide-react";
+import { ChevronLeft, ExternalLink, MapPin, Calendar, DollarSign, Building2, Pencil, Trash2, Check, X, Settings2 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { CompanyAvatar } from "@/components/common/CompanyAvatar";
 import { StatusBadge, PriorityBadge } from "@/components/common/badges";
@@ -14,6 +14,7 @@ import { FormDialog } from "@/components/common/FormDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { ApplicationFormFields } from "@/features/applications/ApplicationFormFields";
 import { RichTextEditor } from "@/components/common/RichTextEditor";
+import { StageManagerModal } from "@/components/common/StageManagerModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +41,7 @@ import {
   deleteApplication,
   listCompanies,
   listContacts,
+  listApplicationStages,
 } from "@/services";
 import {
   APP_STATUS_LABELS,
@@ -62,12 +64,14 @@ export function ApplicationDetailPage({ id }: { id: string }) {
   const timeline = useQuery({ queryKey: ["timeline", id], queryFn: () => listTimeline(id), enabled: !!id });
   const checklist = useQuery({ queryKey: ["checklist", id], queryFn: () => listChecklist(id), enabled: !!id });
   const activities = useQuery({ queryKey: ["activities", id], queryFn: () => listActivities(id), enabled: !!id });
+  const stagesQuery = useQuery({ queryKey: ["application_stages", id], queryFn: () => listApplicationStages(id), enabled: !!id });
 
   const companies = useQuery({ queryKey: ["companies"], queryFn: listCompanies });
   const contacts = useQuery({ queryKey: ["contacts"], queryFn: listContacts });
 
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [openStagesModal, setOpenStagesModal] = useState(false);
 
   // Inline edit state
   const [editingJobReq, setEditingJobReq] = useState(false);
@@ -437,81 +441,90 @@ export function ApplicationDetailPage({ id }: { id: string }) {
         <div className="lg:col-span-1 rounded-lg bg-surface border border-hairline p-5 shadow-soft">
           <div className="flex items-center justify-between">
             <div className="text-eyebrow text-ink-muted">{t("applications.timeline.title")}</div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink transition-colors px-2 py-1 rounded-md hover:bg-surface-muted cursor-pointer font-medium"
-                >
-                  <Pencil className="h-3 w-3" />
-                  <span>{t("applications.jobRequirements.edit", { defaultValue: "Ubah" })}</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 max-h-72 overflow-y-auto">
-                {(() => {
-                  const REJECTABLE_STAGES: AppStatus[] = [
-                    "wishlist", "applied", "hr_screening", "technical_test",
-                    "hr_interview", "user_interview", "final_interview", "offer"
-                  ];
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setOpenStagesModal(true)}
+                title={t("applications.stages.manage", { defaultValue: "Atur Tahapan" })}
+                className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink transition-colors px-2 py-1 rounded-md hover:bg-surface-muted cursor-pointer font-medium"
+              >
+                <Settings2 className="h-3 w-3" />
+                <span>{t("applications.stages.manage", { defaultValue: "Atur" })}</span>
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink transition-colors px-2 py-1 rounded-md hover:bg-surface-muted cursor-pointer font-medium"
+                  >
+                    <Pencil className="h-3 w-3" />
+                    <span>{t("applications.jobRequirements.edit", { defaultValue: "Ubah" })}</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 max-h-72 overflow-y-auto">
+                  {(() => {
+                    const activeStages = stagesQuery.data ?? [];
+                    const stageList = [
+                      ...activeStages.map((s) => ({ key: s.key, label: s.label })),
+                      { key: "rejected", label: APP_STATUS_LABELS.rejected || "Rejected" },
+                    ];
 
-                  return APP_STATUS_ORDER.map((st) => {
-                    if (st === "rejected") {
+                    return stageList.map((st) => {
+                      if (st.key === "rejected") {
+                        return (
+                          <DropdownMenuSub key={st.key}>
+                            <DropdownMenuSubTrigger className="cursor-pointer text-xs justify-between py-2 px-2.5 text-destructive font-medium">
+                              <span>{st.label}</span>
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent className="w-52">
+                              <div className="px-2.5 py-1 text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
+                                {t("applications.form.rejectedAtStage", { defaultValue: "Ditolak Pada Tahap" })}
+                              </div>
+                              {activeStages.map((rejSt) => (
+                                <DropdownMenuItem
+                                  key={rejSt.key}
+                                  onClick={() => updateMut.mutate({ status: "rejected", rejected_at_stage: rejSt.key })}
+                                  className={cn(
+                                    "cursor-pointer text-xs justify-between py-1.5 px-2.5",
+                                    a.status === "rejected" && (a.rejected_at_stage || activeStages[0]?.key) === rejSt.key && "font-semibold text-destructive bg-destructive/5"
+                                  )}
+                                >
+                                  <span>{rejSt.label}</span>
+                                  {a.status === "rejected" && (a.rejected_at_stage || activeStages[0]?.key) === rejSt.key && (
+                                    <Check className="h-3.5 w-3.5 text-destructive shrink-0" />
+                                  )}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
+                        );
+                      }
+
                       return (
-                        <DropdownMenuSub key={st}>
-                          <DropdownMenuSubTrigger className="cursor-pointer text-xs justify-between py-2 px-2.5 text-destructive font-medium">
-                            <span>{APP_STATUS_LABELS.rejected}</span>
-                          </DropdownMenuSubTrigger>
-                          <DropdownMenuSubContent className="w-52">
-                            <div className="px-2.5 py-1 text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
-                              {t("applications.form.rejectedAtStage", { defaultValue: "Ditolak Pada Tahap" })}
-                            </div>
-                            {REJECTABLE_STAGES.map((rejSt) => (
-                              <DropdownMenuItem
-                                key={rejSt}
-                                onClick={() => updateMut.mutate({ status: "rejected", rejected_at_stage: rejSt })}
-                                className={cn(
-                                  "cursor-pointer text-xs justify-between py-1.5 px-2.5",
-                                  a.status === "rejected" && (a.rejected_at_stage || "applied") === rejSt && "font-semibold text-destructive bg-destructive/5"
-                                )}
-                              >
-                                <span>{APP_STATUS_LABELS[rejSt]}</span>
-                                {a.status === "rejected" && (a.rejected_at_stage || "applied") === rejSt && (
-                                  <Check className="h-3.5 w-3.5 text-destructive shrink-0" />
-                                )}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuSubContent>
-                        </DropdownMenuSub>
+                        <DropdownMenuItem
+                          key={st.key}
+                          onClick={() => updateMut.mutate({ status: st.key })}
+                          className={cn(
+                            "cursor-pointer text-xs justify-between py-2 px-2.5",
+                            st.key === a.status && "font-semibold text-primary bg-primary/5"
+                          )}
+                        >
+                          <span>{st.label}</span>
+                          {st.key === a.status && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                        </DropdownMenuItem>
                       );
-                    }
-
-                    return (
-                      <DropdownMenuItem
-                        key={st}
-                        onClick={() => updateMut.mutate({ status: st })}
-                        className={cn(
-                          "cursor-pointer text-xs justify-between py-2 px-2.5",
-                          st === a.status && "font-semibold text-primary bg-primary/5"
-                        )}
-                      >
-                        <span>{APP_STATUS_LABELS[st]}</span>
-                        {st === a.status && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                      </DropdownMenuItem>
-                    );
-                  });
-                })()}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    });
+                  })()}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           <div className="text-title text-ink mt-1 mb-4">{t("applications.timeline.subtitle")}</div>
           <ol className="relative pl-1">
             {(() => {
-              const ALL_STAGES: AppStatus[] = [
-                "wishlist", "applied", "hr_screening", "technical_test",
-                "hr_interview", "user_interview", "final_interview", "offer", "accepted"
-              ];
-
-              const stagesToRender = ALL_STAGES;
+              const activeStages = stagesQuery.data ?? [];
+              const ALL_STAGES = activeStages.map((s) => s.key);
+              const stagesToRender = activeStages;
 
               // Find exact failed stage index if application is rejected
               let failedStageIdx = -1;
@@ -528,14 +541,16 @@ export function ApplicationDetailPage({ id }: { id: string }) {
                     }
                   }
                   if (failedStageIdx <= 0) {
-                    failedStageIdx = 1;
+                    failedStageIdx = 0;
                   }
                 }
               }
 
               const currentIdx = ALL_STAGES.indexOf(a.status);
 
-              return stagesToRender.map((stage, stageIdx) => {
+              return stagesToRender.map((stageObj, stageIdx) => {
+                const stage = stageObj.key;
+                const stageLabel = stageObj.label;
                 const entry = (timeline.data ?? []).find((t) => t.stage === stage);
                 const isLast = stageIdx === stagesToRender.length - 1;
 
@@ -553,7 +568,7 @@ export function ApplicationDetailPage({ id }: { id: string }) {
                   if (stageIdx < currentIdx) {
                     state = "completed";
                   } else if (stageIdx === currentIdx) {
-                    state = (stage === "offer" || stage === "accepted") ? "offer" : "active";
+                    state = (stage === "offer" || stage === "offering" || stage === "accepted" || stage === "onboarding") ? "offer" : "active";
                   } else {
                     state = "future";
                   }
@@ -593,7 +608,7 @@ export function ApplicationDetailPage({ id }: { id: string }) {
                           state === "rejected" && "text-destructive font-semibold",
                           state === "future" && "text-ink-faint"
                         )}>
-                          {APP_STATUS_LABELS[stage]}
+                          {stageLabel}
                         </div>
                         {entry?.notes && !entry.notes.startsWith("Moved to") && !entry.notes.startsWith("Pindah ke") && (
                           <div className="text-xs text-ink-muted mt-0.5 break-words">{entry.notes}</div>
@@ -609,8 +624,9 @@ export function ApplicationDetailPage({ id }: { id: string }) {
                       )}>
                         {entry ? formatDate(entry.occurred_at)
                           : state === "rejected" ? t("applications.timeline.rejected", { defaultValue: "Ditolak" })
-                          : stage === a.status && a.status === "offer" ? t("applications.timeline.offered", { defaultValue: "Penawaran Kerja" })
+                          : stage === a.status && (a.status === "offer" || a.status === "offering") ? t("applications.timeline.offered", { defaultValue: "Penawaran Kerja" })
                           : stage === a.status && a.status === "accepted" ? t("applications.timeline.accepted", { defaultValue: "Diterima" })
+                          : stage === a.status && a.status === "onboarding" ? t("applications.timeline.onboarding", { defaultValue: "Onboarding" })
                           : stage === a.status && a.applied_at && a.status === "applied" ? formatDate(a.applied_at)
                           : state === "active" ? t("applications.timeline.inProgress")
                           : state === "completed" ? t("applications.timeline.passed")
@@ -658,6 +674,13 @@ export function ApplicationDetailPage({ id }: { id: string }) {
         onConfirm={async () => {
           await deleteMut.mutateAsync();
         }}
+      />
+
+      <StageManagerModal
+        open={openStagesModal}
+        onOpenChange={setOpenStagesModal}
+        applicationId={id}
+        currentStages={stagesQuery.data ?? []}
       />
     </AppShell>
   );

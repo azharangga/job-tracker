@@ -196,7 +196,18 @@
       "inProgress": "Sedang Berlangsung",
       "offered": "Penawaran Kerja",
       "accepted": "Diterima",
+      "onboarding": "Onboarding",
       "rejected": "Ditolak"
+    },
+    "stages": {
+      "title": "Atur Tahapan Timeline",
+      "manage": "Atur",
+      "desc": "Geser untuk mengubah urutan. Ubah nama, tambah, atau hapus tahapan khusus lowongan ini.",
+      "add": "Tambah Tahap",
+      "minError": "Minimal harus ada 1 tahap",
+      "reset": "Reset",
+      "saved": "Tahapan berhasil disimpan",
+      "placeholder": "Nama tahap"
     },
     "form": {
       "position": "Posisi",

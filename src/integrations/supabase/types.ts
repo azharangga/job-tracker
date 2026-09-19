@@ -81,6 +81,41 @@ export type Database = {
           },
         ]
       }
+      application_stages: {
+        Row: {
+          id: string
+          application_id: string
+          key: string
+          label: string
+          sort_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          application_id: string
+          key: string
+          label: string
+          sort_order: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          application_id?: string
+          key?: string
+          label?: string
+          sort_order?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_stages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_timeline: {
         Row: {
           application_id: string

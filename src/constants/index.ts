@@ -8,72 +8,98 @@ import type {
   WorkMode,
 } from "@/types";
 
+export const DEFAULT_APPLICATION_STAGES: Array<{ key: string; label: string }> = [
+  { key: "applied", label: "Applied" },
+  { key: "screening", label: "Screening" },
+  { key: "assessment", label: "Assessment / Psychotest" },
+  { key: "hr_interview", label: "HR Interview" },
+  { key: "user_interview", label: "User Interview" },
+  { key: "offering", label: "Offering" },
+  { key: "accepted", label: "Accepted" },
+  { key: "onboarding", label: "Onboarding" },
+];
+
 export const APP_NAME = "Job Tracker";
 
 // -------------------- Status --------------------
 export const APP_STATUS_ORDER: AppStatus[] = [
   "wishlist",
   "applied",
-  "hr_screening",
-  "technical_test",
+  "screening",
+  "assessment",
   "hr_interview",
   "user_interview",
-  "final_interview",
-  "offer",
+  "offering",
   "accepted",
+  "onboarding",
   "rejected",
 ];
 
-export const APP_STATUS_LABELS: Record<AppStatus, string> = {
+export const APP_STATUS_LABELS: Record<string, string> = {
   wishlist: "Wishlist",
   applied: "Applied",
-  hr_screening: "HR Screening",
-  technical_test: "Technical Test",
+  screening: "Screening",
+  assessment: "Assessment / Psychotest",
+  hr_screening: "Screening",
+  technical_test: "Assessment / Psychotest",
   hr_interview: "HR Interview",
   user_interview: "User Interview",
-  final_interview: "Final Interview",
+  final_interview: "User Interview",
   offer: "Offering",
+  offering: "Offering",
   accepted: "Accepted",
+  onboarding: "Onboarding",
   rejected: "Rejected",
 };
 
 // dot / bg / text token names for sticker palette
 export const APP_STATUS_STICKER: Record<
-  AppStatus,
+  string,
   "sky" | "purple" | "pink" | "orange" | "teal" | "green" | "brown" | "red" | "amber" | "muted"
 > = {
   wishlist: "muted",         // abu-abu – belum dilamar
   applied: "sky",            // biru – sudah apply
-  hr_screening: "purple",   // ungu – masuk proses
-  technical_test: "orange",  // oranye – test teknis
-  user_interview: "orange",  // oranye – interview user
+  screening: "purple",       // ungu – screening
+  hr_screening: "purple",
+  assessment: "orange",      // oranye – test
+  technical_test: "orange",
   hr_interview: "orange",    // oranye – interview HR
-  final_interview: "pink",   // pink – tahap akhir interview
+  user_interview: "pink",    // pink – interview user
+  final_interview: "pink",
   offer: "green",            // hijau – penawaran kerja ✅
+  offering: "green",
   accepted: "green",         // hijau – diterima ✅
+  onboarding: "teal",        // teal – onboarding 🚀
   rejected: "red",           // merah – ditolak ❌
 };
 
 export const APP_ACTIVE_STATUSES: AppStatus[] = [
   "applied",
+  "screening",
+  "assessment",
   "hr_screening",
   "technical_test",
   "user_interview",
   "hr_interview",
   "final_interview",
   "offer",
+  "offering",
 ];
 
-// Kanban columns (subset of statuses, in board order)
 export const KANBAN_COLUMNS: AppStatus[] = [
   "wishlist",
   "applied",
+  "screening",
+  "assessment",
   "hr_screening",
   "technical_test",
+  "hr_interview",
   "user_interview",
   "final_interview",
   "offer",
+  "offering",
   "accepted",
+  "onboarding",
   "rejected",
 ];
 

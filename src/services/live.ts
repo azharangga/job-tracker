@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type {
   Application,
   AppStatus,
+  ApplicationStage,
   Company,
   Contact,
   DocumentRow,
@@ -12,6 +13,7 @@ import type {
   ActivityEntry,
   CalendarEvent,
 } from "@/types";
+import { DEFAULT_APPLICATION_STAGES } from "@/constants";
 
 // ----------------------- Applications -----------------------
 export async function listApplications(): Promise<Application[]> {
@@ -111,6 +113,58 @@ export async function listActivities(applicationId: string): Promise<ActivityEnt
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data as unknown as ActivityEntry[]) ?? [];
+}
+
+export async function listApplicationStages(applicationId: string): Promise<ApplicationStage[]> {
+  const { data, error } = await supabase
+    .from("application_stages" as never)
+    .select("*")
+    .eq("application_id", applicationId)
+    .order("sort_order", { ascending: true });
+  if (error) {
+    if ((error as any).code === "42P01") {
+      return DEFAULT_APPLICATION_STAGES.map((s, i) => ({
+        id: `default-${s.key}`,
+        application_id: applicationId,
+        key: s.key,
+        label: s.label,
+        sort_order: i + 1,
+      }));
+    }
+    throw error;
+  }
+  const rows = (data as unknown as ApplicationStage[]) ?? [];
+  if (rows.length === 0) {
+    return DEFAULT_APPLICATION_STAGES.map((s, i) => ({
+      id: `default-${s.key}`,
+      application_id: applicationId,
+      key: s.key,
+      label: s.label,
+      sort_order: i + 1,
+    }));
+  }
+  return rows;
+}
+
+export async function saveApplicationStages(applicationId: string, stages: Array<{ key: string; label: string }>): Promise<ApplicationStage[]> {
+  const { error: delErr } = await supabase
+    .from("application_stages" as never)
+    .delete()
+    .eq("application_id", applicationId);
+  if (delErr && (delErr as any).code !== "42P01") throw delErr;
+  if (stages.length === 0) return [];
+  const payload = stages.map((s, i) => ({
+    application_id: applicationId,
+    key: s.key,
+    label: s.label,
+    sort_order: i + 1,
+  }));
+  const { data, error } = await supabase
+    .from("application_stages" as never)
+    .insert(payload as never)
+    .select("*");
+  if (error) throw error;
+  return (data as unknown as ApplicationStage[]) ?? [];
 }
 
 // ----------------------- Companies -----------------------

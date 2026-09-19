@@ -45,6 +45,7 @@
     {"id": "40000000-0000-0000-0000-00000000000c", "company_id": "10000000-0000-0000-0000-000000000004", "position": "SDE II (Cloud Commerce)", "status": "applied", "work_mode": "hybrid", "employment_type": "full_time", "platform": "LinkedIn", "applied_at": "2026-07-03", "priority": "high", "tags": ["aws", "java"], "created_at": "2026-07-03T08:00:00Z"},
     {"id": "40000000-0000-0000-0000-00000000000d", "company_id": "10000000-0000-0000-0000-00000000000d", "position": "Frontend Lead", "status": "hr_interview", "work_mode": "hybrid", "employment_type": "full_time", "platform": "Referral", "applied_at": "2026-06-12", "priority": "high", "tags": ["react", "tailwind"], "created_at": "2026-06-12T08:00:00Z"}
   ],
+  "application_stages": [],
   "application_timeline": [
     {"id": "50000000-0000-0000-0000-000000000001", "application_id": "40000000-0000-0000-0000-000000000001", "stage": "applied", "occurred_at": "2026-06-20T08:00:00Z", "notes": "Applied via LinkedIn"},
     {"id": "50000000-0000-0000-0000-000000000002", "application_id": "40000000-0000-0000-0000-000000000001", "stage": "hr_screening", "occurred_at": "2026-06-23T10:00:00Z", "notes": "30 min call with Sarah Johnson"},

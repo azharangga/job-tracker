@@ -3,6 +3,7 @@ import * as demoRepo from "./demo";
 import type {
   Application,
   AppStatus,
+  ApplicationStage,
   Company,
   Contact,
   DocumentRow,
@@ -58,6 +59,14 @@ export function toggleChecklist(id: string, done: boolean): Promise<void> {
 
 export function listActivities(applicationId: string): Promise<ActivityEntry[]> {
   return isDemo() ? demoRepo.listActivities(applicationId) : liveRepo.listActivities(applicationId);
+}
+
+export function listApplicationStages(applicationId: string): Promise<ApplicationStage[]> {
+  return isDemo() ? demoRepo.listApplicationStages(applicationId) : liveRepo.listApplicationStages(applicationId);
+}
+
+export function saveApplicationStages(applicationId: string, stages: Array<{ key: string; label: string }>): Promise<ApplicationStage[]> {
+  return isDemo() ? demoRepo.saveApplicationStages(applicationId, stages) : liveRepo.saveApplicationStages(applicationId, stages);
 }
 
 export function listCompanies(): Promise<Company[]> {

@@ -1,6 +1,7 @@
 import type {
   Application,
   AppStatus,
+  ApplicationStage,
   Company,
   Contact,
   DocumentRow,
@@ -11,6 +12,7 @@ import type {
   ActivityEntry,
   CalendarEvent,
 } from "@/types";
+import { DEFAULT_APPLICATION_STAGES } from "@/constants";
 
 // Helper function to safely read from localStorage
 function getLocalData(key: string): any[] {
@@ -161,6 +163,35 @@ export async function listActivities(applicationId: string): Promise<ActivityEnt
   return activities
     .filter(a => a.application_id === applicationId)
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+export async function listApplicationStages(applicationId: string): Promise<ApplicationStage[]> {
+  const all = getLocalData("application_stages") as ApplicationStage[];
+  const filtered = all.filter((s) => s.application_id === applicationId).sort((a, b) => a.sort_order - b.sort_order);
+  if (filtered.length > 0) return filtered;
+  return DEFAULT_APPLICATION_STAGES.map((s, i) => ({
+    id: `default-${s.key}`,
+    application_id: applicationId,
+    key: s.key,
+    label: s.label,
+    sort_order: i + 1,
+  }));
+}
+
+export async function saveApplicationStages(applicationId: string, stages: Array<{ key: string; label: string }>): Promise<ApplicationStage[]> {
+  const all = getLocalData("application_stages") as ApplicationStage[];
+  const remaining = all.filter((s) => s.application_id !== applicationId);
+  const fresh: ApplicationStage[] = stages.map((s, i) => ({
+    id: generateUUID(),
+    application_id: applicationId,
+    key: s.key,
+    label: s.label,
+    sort_order: i + 1,
+    created_at: new Date().toISOString(),
+  }));
+  const next = [...remaining, ...fresh];
+  setLocalData("application_stages", next);
+  return fresh;
 }
 
 // ----------------------- Companies -----------------------
